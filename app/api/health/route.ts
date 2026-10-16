@@ -4,7 +4,8 @@ export async function GET() {
   try {
     const [rows] = await pool.query('SELECT NOW() AS time');
     return Response.json({ ok: true, db: rows });
-  } catch (err) {
-    return Response.json({ ok: false, error: String(err) }, { status: 500 });
+      } catch (err) {
+    console.error('Health check failed:', err);
+    return Response.json({ ok: false }, { status: 500 });
   }
 }
