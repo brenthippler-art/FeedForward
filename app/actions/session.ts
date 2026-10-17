@@ -7,7 +7,7 @@ import { SESSION_COOKIE } from '@/lib/session';
 
 export async function signIn(formData: FormData) {
   const user = findDemoUser(Number(formData.get('orgId')));
-  if (!user) redirect('/#sign-in');
+  if (!user) redirect('/?signin=1');
 
 //   This is a demo identity, not secure authentication. In a real application, you would verify the user's credentials and create a secure session.  
   const cookieStore = await cookies();
@@ -24,5 +24,5 @@ export async function signIn(formData: FormData) {
 export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE);
-  redirect('/#sign-in');
+  redirect('/?signin=1');
 }

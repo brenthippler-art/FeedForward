@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/session';
 import { signOut } from '@/app/actions/session';
 import HeaderNav from '@/components/HeaderNav';
+import SignInLink from '@/components/SignInLink';
 
 const navByRole = {
   donor: [
@@ -42,13 +43,23 @@ export default async function SiteHeader() {
             </div>
           </div>
         ) : (
-          <Link
-            href="/#sign-in"
-            className="inline-flex min-h-11 items-center rounded-[10px] bg-white px-4 font-bold text-brand"
+          <SignInLink className="inline-flex min-h-11 items-center rounded-[10px] bg-white px-4 font-bold text-brand"
           >
             Sign in
-          </Link>
+          </SignInLink>
         )}
+      </div>
+    </header>
+  );
+}
+
+export function SiteHeaderFallback() {
+  return (
+    <header className="bg-brand text-white">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Link href="/" className="font-display text-2xl font-bold">
+          FeedForward
+        </Link>
       </div>
     </header>
   );

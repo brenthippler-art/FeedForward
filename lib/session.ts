@@ -12,6 +12,6 @@ export async function getCurrentUser() {
 
 export async function requireRole(role: Role) {
   const user = await getCurrentUser();
-  if (!user || user.role !== role) redirect('/#sign-in');
+  if (!user || user.role !== role) redirect('/?signin=1');
   return user;
 }

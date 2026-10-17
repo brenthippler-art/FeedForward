@@ -1,9 +1,11 @@
-import Link from "next/link";
 import Image from "next/image";
-import TierBadge from "@/components/TierBadge";
 import type { Tier } from "@/types";
 import { demoUsers } from "@/lib/demo-users";
 import { signIn } from "@/app/actions/session";
+import { Suspense } from "react";
+import SignInScroller from "@/components/SignInScroller";
+import SignInLink from "@/components/SignInLink";
+import TierBadge from "@/components/TierBadge";
 
 export const metadata = {
   title: { absolute: "FeedForward: Route surplus food to its best use" },
@@ -67,6 +69,9 @@ const heroImages = [
 export default function Home() {
   return (
     <main id="main">
+      <Suspense fallback={null}>
+        <SignInScroller />
+      </Suspense>
       {/* Hero */}
       <section aria-labelledby="hero-heading" className="relative">
         <div className="grid h-[520px] grid-cols-3 sm:h-[600px]">
@@ -77,6 +82,7 @@ export default function Home() {
                 alt={img.alt}
                 fill
                 priority={index === 1}
+                loading="eager"
                 sizes="(max-width: 640px) 34vw, 33vw"
                 className="object-cover"
               />
@@ -105,23 +111,16 @@ export default function Home() {
               use: people first, then farms, then compost.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href="#sign-in"
-                className="inline-flex min-h-12 items-center rounded-full bg-surface px-7 font-bold uppercase tracking-wide text-brand hover:bg-ground"
-              >
+              <SignInLink className="inline-flex min-h-12 items-center rounded-full bg-surface px-7 font-bold uppercase tracking-wide text-brand hover:bg-ground">
                 I&apos;m donating food
-              </Link>
-              <Link
-                href="#sign-in"
-                className="inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 font-bold uppercase tracking-wide text-white hover:bg-white/10"
-              >
+              </SignInLink>
+              <SignInLink className="inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 font-bold uppercase tracking-wide text-white hover:bg-white/10">
                 I&apos;m receiving food
-              </Link>
+              </SignInLink>
             </div>
           </div>
         </div>
       </section>
-      
 
       {/* Tiers */}
       <section
@@ -150,27 +149,35 @@ export default function Home() {
           </ol>
         </div>
       </section>
-      
-            {/* Demo sign-in */}
+
+      {/* Demo sign-in */}
       <section
         id="sign-in"
         aria-labelledby="signin-heading"
         className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-6 px-6 py-14"
       >
         <div className="flex flex-col gap-2">
-          <h2 id="signin-heading" className="font-display text-[28px] font-bold">
+          <h2
+            id="signin-heading"
+            tabIndex={-1}
+            className="font-display text-[28px] font-bold focus:ouline-none"
+          >
             Try the demo: choose who you are
           </h2>
           <p className="text-muted">
-            No password needed. Pick a sample organization to see FeedForward from their side.
+            No password needed. Pick a sample organization to see FeedForward
+            from their side.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {(['donor', 'recipient'] as const).map((role) => (
-            <div key={role} className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6">
+          {(["donor", "recipient"] as const).map((role) => (
+            <div
+              key={role}
+              className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6"
+            >
               <h3 className="font-display text-xl font-semibold">
-                {role === 'donor' ? 'I’m donating food' : 'I’m receiving food'}
+                {role === "donor" ? "I’m donating food" : "I’m receiving food"}
               </h3>
               <ul className="flex flex-col gap-2">
                 {demoUsers
@@ -184,7 +191,9 @@ export default function Home() {
                           className="flex min-h-14 w-full flex-wrap items-center justify-between gap-2 rounded-xl border border-line px-4 py-2 text-left hover:border-brand"
                         >
                           <span className="font-bold">{user.name}</span>
-                          <span className="text-sm text-muted">{user.description}</span>
+                          <span className="text-sm text-muted">
+                            {user.description}
+                          </span>
                         </button>
                       </form>
                     </li>
