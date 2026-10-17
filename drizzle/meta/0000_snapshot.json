@@ -1,0 +1,788 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "5",
+  "dialect": "mysql",
+  "tables": {
+    "AcceptanceRule": {
+      "name": "AcceptanceRule",
+      "columns": {
+        "rule_id": {
+          "autoincrement": true,
+          "name": "rule_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_id": {
+          "autoincrement": false,
+          "name": "recipient_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_of_week": {
+          "autoincrement": false,
+          "name": "day_of_week",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pickup_start": {
+          "autoincrement": false,
+          "name": "pickup_start",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pickup_end": {
+          "autoincrement": false,
+          "name": "pickup_end",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "AcceptanceRule_rule_id": {
+          "name": "AcceptanceRule_rule_id",
+          "columns": [
+            "rule_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "AcceptanceRule_ibfk_1": {
+          "name": "AcceptanceRule_ibfk_1",
+          "tableFrom": "AcceptanceRule",
+          "tableTo": "Recipient",
+          "columnsFrom": [
+            "recipient_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {
+        "recipient_id": {
+          "name": "recipient_id",
+          "columns": [
+            "recipient_id",
+            "day_of_week",
+            "pickup_start"
+          ]
+        }
+      },
+      "checkConstraint": {
+        "AcceptanceRule_chk_1": {
+          "name": "AcceptanceRule_chk_1",
+          "value": "(`day_of_week` in (_utf8mb4\\'Mon\\',_utf8mb4\\'Tue\\',_utf8mb4\\'Wed\\',_utf8mb4\\'Thu\\',_utf8mb4\\'Fri\\',_utf8mb4\\'Sat\\',_utf8mb4\\'Sun\\'))"
+        }
+      }
+    },
+    "AcceptedTier": {
+      "name": "AcceptedTier",
+      "columns": {
+        "recipient_id": {
+          "autoincrement": false,
+          "name": "recipient_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tier": {
+          "autoincrement": false,
+          "name": "tier",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "AcceptedTier_recipient_id_tier": {
+          "name": "AcceptedTier_recipient_id_tier",
+          "columns": [
+            "recipient_id",
+            "tier"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "AcceptedTier_ibfk_1": {
+          "name": "AcceptedTier_ibfk_1",
+          "tableFrom": "AcceptedTier",
+          "tableTo": "Recipient",
+          "columnsFrom": [
+            "recipient_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "AcceptedTier_chk_1": {
+          "name": "AcceptedTier_chk_1",
+          "value": "(`tier` in (1,2,3))"
+        }
+      }
+    },
+    "Category": {
+      "name": "Category",
+      "columns": {
+        "category_id": {
+          "autoincrement": true,
+          "name": "category_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_name": {
+          "autoincrement": false,
+          "name": "category_name",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Category_category_id": {
+          "name": "Category_category_id",
+          "columns": [
+            "category_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {
+        "category_name": {
+          "name": "category_name",
+          "columns": [
+            "category_name"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "Claim": {
+      "name": "Claim",
+      "columns": {
+        "claim_id": {
+          "autoincrement": true,
+          "name": "claim_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "autoincrement": false,
+          "name": "item_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recipient_id": {
+          "autoincrement": false,
+          "name": "recipient_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_time": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "claim_time",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pickup_time": {
+          "autoincrement": false,
+          "name": "pickup_time",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Claim_claim_id": {
+          "name": "Claim_claim_id",
+          "columns": [
+            "claim_id"
+          ]
+        }
+      },
+      "indexes": {
+        "item_id": {
+          "name": "item_id",
+          "columns": [
+            "item_id"
+          ],
+          "isUnique": false
+        },
+        "recipient_id": {
+          "name": "recipient_id",
+          "columns": [
+            "recipient_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Claim_ibfk_1": {
+          "name": "Claim_ibfk_1",
+          "tableFrom": "Claim",
+          "tableTo": "Item",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Claim_ibfk_2": {
+          "name": "Claim_ibfk_2",
+          "tableFrom": "Claim",
+          "tableTo": "Recipient",
+          "columnsFrom": [
+            "recipient_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Donor": {
+      "name": "Donor",
+      "columns": {
+        "org_id": {
+          "autoincrement": false,
+          "name": "org_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Donor_org_id": {
+          "name": "Donor_org_id",
+          "columns": [
+            "org_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Donor_ibfk_1": {
+          "name": "Donor_ibfk_1",
+          "tableFrom": "Donor",
+          "tableTo": "Organization",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Item": {
+      "name": "Item",
+      "columns": {
+        "item_id": {
+          "autoincrement": true,
+          "name": "item_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "donor_id": {
+          "autoincrement": false,
+          "name": "donor_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_id": {
+          "autoincrement": false,
+          "name": "category_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "autoincrement": false,
+          "name": "quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_weight": {
+          "autoincrement": false,
+          "name": "unit_weight",
+          "type": "decimal(8,2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_weight": {
+          "autoincrement": false,
+          "name": "total_weight",
+          "type": "decimal(8,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "(`quantity` * `unit_weight`)",
+            "type": "stored"
+          }
+        },
+        "tier": {
+          "autoincrement": false,
+          "name": "tier",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_name": {
+          "autoincrement": false,
+          "name": "item_name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit": {
+          "autoincrement": false,
+          "name": "unit",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "condition": {
+          "autoincrement": false,
+          "name": "condition",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contains_meat": {
+          "autoincrement": false,
+          "name": "contains_meat",
+          "type": "tinyint(1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_out": {
+          "autoincrement": false,
+          "name": "hours_out",
+          "type": "decimal(6,2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tier_reason": {
+          "autoincrement": false,
+          "name": "tier_reason",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ready_at": {
+          "autoincrement": false,
+          "name": "ready_at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "safe_until": {
+          "autoincrement": false,
+          "name": "safe_until",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "Item_item_id": {
+          "name": "Item_item_id",
+          "columns": [
+            "item_id"
+          ]
+        }
+      },
+      "indexes": {
+        "category_id": {
+          "name": "category_id",
+          "columns": [
+            "category_id"
+          ],
+          "isUnique": false
+        },
+        "donor_id": {
+          "name": "donor_id",
+          "columns": [
+            "donor_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Item_ibfk_1": {
+          "name": "Item_ibfk_1",
+          "tableFrom": "Item",
+          "tableTo": "Donor",
+          "columnsFrom": [
+            "donor_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "Item_ibfk_2": {
+          "name": "Item_ibfk_2",
+          "tableFrom": "Item",
+          "tableTo": "Category",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "category_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "Item_chk_1": {
+          "name": "Item_chk_1",
+          "value": "(`tier` in (1,2,3))"
+        }
+      }
+    },
+    "Organization": {
+      "name": "Organization",
+      "columns": {
+        "org_id": {
+          "autoincrement": true,
+          "name": "org_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "org_name": {
+          "autoincrement": false,
+          "name": "org_name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "street_address": {
+          "autoincrement": false,
+          "name": "street_address",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "autoincrement": false,
+          "name": "city",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "autoincrement": false,
+          "name": "state",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zip_code": {
+          "autoincrement": false,
+          "name": "zip_code",
+          "type": "char(5)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date_registered": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "date_registered",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_name": {
+          "autoincrement": false,
+          "name": "contact_name",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_email": {
+          "autoincrement": false,
+          "name": "contact_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contact_phone": {
+          "autoincrement": false,
+          "name": "contact_phone",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Organization_org_id": {
+          "name": "Organization_org_id",
+          "columns": [
+            "org_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Pickup": {
+      "name": "Pickup",
+      "columns": {
+        "pickup_id": {
+          "autoincrement": true,
+          "name": "pickup_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_id": {
+          "autoincrement": false,
+          "name": "claim_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "autoincrement": false,
+          "name": "quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date_picked_up": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "date_picked_up",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Pickup_pickup_id": {
+          "name": "Pickup_pickup_id",
+          "columns": [
+            "pickup_id"
+          ]
+        }
+      },
+      "indexes": {
+        "claim_id": {
+          "name": "claim_id",
+          "columns": [
+            "claim_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Pickup_ibfk_1": {
+          "name": "Pickup_ibfk_1",
+          "tableFrom": "Pickup",
+          "tableTo": "Claim",
+          "columnsFrom": [
+            "claim_id"
+          ],
+          "columnsTo": [
+            "claim_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Recipient": {
+      "name": "Recipient",
+      "columns": {
+        "org_id": {
+          "autoincrement": false,
+          "name": "org_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "autoincrement": false,
+          "name": "type",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Recipient_org_id": {
+          "name": "Recipient_org_id",
+          "columns": [
+            "org_id"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "Recipient_ibfk_1": {
+          "name": "Recipient_ibfk_1",
+          "tableFrom": "Recipient",
+          "tableTo": "Organization",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "Recipient_chk_1": {
+          "name": "Recipient_chk_1",
+          "value": "(`type` in (_utf8mb4\\'pantry\\',_utf8mb4\\'farm\\',_utf8mb4\\'compost\\'))"
+        }
+      }
+    },
+    "RefusedCategory": {
+      "name": "RefusedCategory",
+      "columns": {
+        "recipient_id": {
+          "autoincrement": false,
+          "name": "recipient_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_id": {
+          "autoincrement": false,
+          "name": "category_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "RefusedCategory_recipient_id_category_id": {
+          "name": "RefusedCategory_recipient_id_category_id",
+          "columns": [
+            "recipient_id",
+            "category_id"
+          ]
+        }
+      },
+      "indexes": {
+        "category_id": {
+          "name": "category_id",
+          "columns": [
+            "category_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "RefusedCategory_ibfk_1": {
+          "name": "RefusedCategory_ibfk_1",
+          "tableFrom": "RefusedCategory",
+          "tableTo": "Recipient",
+          "columnsFrom": [
+            "recipient_id"
+          ],
+          "columnsTo": [
+            "org_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "RefusedCategory_ibfk_2": {
+          "name": "RefusedCategory_ibfk_2",
+          "tableFrom": "RefusedCategory",
+          "tableTo": "Category",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "category_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "Claim": {
+        "columns": {
+          "claim_time": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "Organization": {
+        "columns": {
+          "date_registered": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "Pickup": {
+        "columns": {
+          "date_picked_up": {
+            "isDefaultAnExpression": true
+          }
+        }
+      }
+    },
+    "indexes": {}
+  }
+}
