@@ -1,18 +1,18 @@
 'use client';
 
 import { useId, useState } from 'react';
-import type { AvailableListing } from '@/types';
+import type { RecipientListing } from '@/lib/listings';
 import TierBadge from './TierBadge';
 import { formatTime } from '@/lib/format';
 import { pickupSlots } from '@/lib/pickup-slots';
 
 type AvailableCardProps = {
-  listing: AvailableListing;
-  onClaim: (listing: AvailableListing, pickupTime: string) => void;
+  listing: RecipientListing;
+  onClaim?: (listing: RecipientListing, pickupTime: string) => void;
 };
 
 export default function AvailableCard({ listing, onClaim }: AvailableCardProps) {
-  const slots = pickupSlots(listing.readyAt, listing.safeUntil);
+  const slots = onClaim ? pickupSlots(listing.readyAt, listing.safeUntil) : [];
   const [pickupTime, setPickupTime] = useState('');
   const selectId = useId();
 
@@ -22,7 +22,7 @@ export default function AvailableCard({ listing, onClaim }: AvailableCardProps) 
         <div className="flex flex-col gap-0.5">
           <h3 className="font-display text-xl font-semibold">{listing.item}</h3>
           <p className="text-muted">
-            {listing.donorName} · {listing.distanceMiles} mi
+            {listing.donorName}{listing.distanceMiles !== null && ` · ${listing.distanceMiles} mi`}
           </p>
         </div>
         <TierBadge tier={listing.tier} />
@@ -43,14 +43,16 @@ export default function AvailableCard({ listing, onClaim }: AvailableCardProps) 
         <div>
           <dt className="text-sm text-muted">Safe until</dt>
           <dd className="font-semibold">
-            {listing.safeUntil ? formatTime(listing.safeUntil) : 'No time limit'}
+            {listing.safeUntil ? formatTime(listing.safeUntil) : 'Not provided'}
           </dd>
         </div>
       </dl>
 
       <p className="text-sm text-muted">{listing.tierReason}</p>
 
-      {slots.length === 0 ? (
+      {!onClaim ? (
+        <p className="border-t border-line pt-4 text-sm text-muted">Pickup booking is not available yet.</p>
+      ) : slots.length === 0 ? (
         <p className="border-t border-line pt-4 font-semibold text-warn-text">
           The safe pickup window has passed.
         </p>

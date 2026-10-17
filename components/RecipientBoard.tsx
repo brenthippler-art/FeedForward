@@ -60,7 +60,7 @@ export default function RecipientBoard({ listings }: RecipientBoardProps) {
             <ul className="flex flex-col gap-4">
               {available.map((listing) => (
                 <li key={listing.id}>
-                  <AvailableCard listing={listing} onClaim={handleClaim} />
+                  <AvailableCard listing={listing} onClaim={(_item, pickupTime) => handleClaim(listing, pickupTime)} />
                 </li>
               ))}
             </ul>
