@@ -144,7 +144,7 @@ export const mockAvailable: AvailableListing[] = [
     id: 204, donorId: 2, donorName: 'Athens of the South Dining Hall', distanceMiles: 2.6,
     item: 'Vegetable trimmings', quantity: 22, unit: 'lbs', estimatedLbs: 22,
     condition: 'Raw, kept separate from meat', category: 'produce', containsMeat: false, hoursOut: null,
-    tier: 2, tierReason: 'Plant-based and never touched meat, so safe for animal feed.',
+    tier: 2, tierReason: 'Plant-based and never touched meat, so it can feed goats and chickens.',
     readyAt: '2026-10-17T21:00:00Z', safeUntil: null, status: 'available',
   },
   {

@@ -6,7 +6,7 @@ import TierBadge from './TierBadge';
 const typeLabels: Record<OrgType, string> = {
   donor: 'Donor',
   pantry: 'Pantry or shelter',
-  farm: 'Farm · animal feed',
+  farm: 'Farm · non-swine animal feed',
   compost: 'Compost site',
 };
 

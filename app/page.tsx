@@ -247,14 +247,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-muted">
-        <p>
-          Built for HackTN26 on Oracle Cloud Infrastructure: Compute, MySQL
-          HeatWave and Generative AI.
-        </p>
-        <p>Prototype with sample data.</p>
-      </footer>
     </main>
   );
 }
