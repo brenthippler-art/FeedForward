@@ -1,3 +1,5 @@
+import DonorForm from '@/components/DonorForm';
+
 export const metadata = { title: 'Post surplus' };
 
 export default function DonorPage() {
@@ -7,6 +9,7 @@ export default function DonorPage() {
         <p className="text-[15px] text-muted">Riverside Bistro · donor</p>
         <h1 className="font-display text-[34px] font-bold">Post tonight&apos;s surplus</h1>
       </div>
+      <DonorForm />
     </main>
   );
 }
