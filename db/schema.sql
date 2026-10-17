@@ -122,12 +122,16 @@ CREATE TABLE Claim (
 );
 
 CREATE TABLE Pickup (
-    pickup_id      INT      NOT NULL AUTO_INCREMENT,
-    claim_id       INT      NOT NULL,
-    quantity       INT      NOT NULL,
-    date_picked_up DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    pickup_id      INT           NOT NULL AUTO_INCREMENT,
+    claim_id       INT           NOT NULL,
+    quantity       INT           NOT NULL,
+    date_picked_up DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Measured weight at pickup, separate from the estimated quantity used
+    -- by the inventory trigger. Added by database/migrations/001_listing_details.sql.
+    actual_lbs     DECIMAL(10,3),
     PRIMARY KEY (pickup_id),
-    FOREIGN KEY (claim_id) REFERENCES Claim(claim_id)
+    FOREIGN KEY (claim_id) REFERENCES Claim(claim_id),
+    CHECK (actual_lbs IS NULL OR actual_lbs > 0)
 );
 
 -- ============================================================

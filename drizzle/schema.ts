@@ -97,10 +97,12 @@ export const pickup = mysqlTable("Pickup", {
 	claimId: int("claim_id").notNull().references(() => claim.claimId),
 	quantity: int().notNull(),
 	datePickedUp: datetime("date_picked_up", { mode: 'string'}).default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	actualLbs: decimal("actual_lbs", { precision: 10, scale: 3 }),
 },
 (table) => [
 	index("claim_id").on(table.claimId),
 	primaryKey({ columns: [table.pickupId], name: "Pickup_pickup_id"}),
+	check("chk_pickup_actual_lbs", sql`((\`actual_lbs\` is null) or (\`actual_lbs\` > 0))`),
 ]);
 
 export const recipient = mysqlTable("Recipient", {

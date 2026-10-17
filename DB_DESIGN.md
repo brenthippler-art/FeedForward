@@ -85,6 +85,7 @@ erDiagram
         int claim_id FK
         int quantity
         datetime date_picked_up
+        decimal actual_lbs "nullable, measured weight"
     }
 ```
 
@@ -107,7 +108,7 @@ erDiagram
 
 **Claims and pickups**
 10. A `Claim` represents a recipient reserving an `Item` before collection (`claim_time`, intended `pickup_time`).
-11. `Pickup` is the completed event and stays minimal — it references only `claim_id`; donor/recipient/item are derived by joining through `Claim` rather than duplicated.
+11. `Pickup` is the completed event and stays minimal — it references only `claim_id`; donor/recipient/item are derived by joining through `Claim` rather than duplicated. `actual_lbs` (nullable, `CHECK (actual_lbs IS NULL OR actual_lbs > 0)`) records the measured weight at pickup time, separate from the `quantity` the inventory trigger uses.
 12. A `BEFORE INSERT` trigger on `Pickup` resolves the item through its `Claim`, rejects the insert (via `SIGNAL`) if the pickup's `quantity` exceeds the item's current `quantity`, and otherwise decrements `Item.quantity` by that amount — enforced this way because MySQL `CHECK` constraints cannot query another table.
 
 **Other**
