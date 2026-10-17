@@ -80,6 +80,7 @@ export type RecentPickup = {
   pickupId: number;
   date: string;          // ISO date string
   item: string;
+  donorName: string;
   recipientName: string;
   tier: Tier;
   lbs: number;
