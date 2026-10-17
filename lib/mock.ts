@@ -1,4 +1,4 @@
-import type { DraftListing, Listing, RecipientMatch } from '@/types';
+import type { DraftListing, Listing, RecipientMatch, Impact } from '@/types';
 
 // Stand-in for what /api/extract will return. Same shape as the real thing.
 export const mockDrafts: DraftListing[] = [
@@ -103,3 +103,19 @@ export const mockMatches: RecipientMatch[] = [
     aiSummary: 'Ranked third because food for people comes first.',
   },
 ];
+
+export const mockImpact: Impact = {
+  totalLbs: 1240,
+  lbsByTier: { 1: 760, 2: 310, 3: 170 },
+  meals: 0, // 0 until the hustler supplies a sourced lbs-per-meal figure
+  pickups: 38,
+  recent: [
+    { pickupId: 4, date: '2026-10-16', item: 'Romaine lettuce', recipientName: 'Eastside Community Pantry', tier: 1, lbs: 31 },
+    { pickupId: 3, date: '2026-10-16', item: 'Potato peels', recipientName: 'Green Acres Compost', tier: 3, lbs: 14 },
+    { pickupId: 2, date: '2026-10-15', item: 'Vegetable trimmings', recipientName: 'Willow Creek Farm', tier: 2, lbs: 22 },
+    { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', recipientName: 'Hope Street Shelter Kitchen', tier: 1, lbs: 18 },
+  ],
+};
+
+export const mockImpactSummary =
+  'This month Riverside Bistro kept 1,240 lbs of food out of the dumpster. Most of it went to people through local pantries and a shelter kitchen, vegetable trimmings fed a nearby farm, and the rest became compost.';

@@ -76,9 +76,19 @@ export type Pickup = {
 };
 
 // What /api/impact returns for the dashboard
+export type RecentPickup = {
+  pickupId: number;
+  date: string;          // ISO date string
+  item: string;
+  recipientName: string;
+  tier: Tier;
+  lbs: number;
+};
+
 export type Impact = {
   totalLbs: number;
   lbsByTier: Record<Tier, number>; // { 1: 120, 2: 45, 3: 30 }
   meals: number;
   pickups: number;
+  recent: RecentPickup[]; // newest first, up to 5
 };
