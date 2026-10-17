@@ -54,3 +54,58 @@ older `RecipientBoard` remains an unused demo component with local-only actions.
 Local checks: `node --test tests/listings.test.mjs`, `npx tsc --noEmit`,
 and `npm run lint`. Tests isolate DB/session dependencies; they do not verify
 connectivity or execute SQL against OCI.
+
+
+## Whole-listing reservations and completion
+
+Each listing can have one claim (`uq_claim_item`), and each claim can have one
+completed pickup (`uq_pickup_claim`). Completion must collect the entire positive
+remaining item quantity. Partial reservations/pickups, cancellation, and
+reassignment are outside this version. The existing stock trigger decrements
+quantity exactly once; the new guard validates and locks stock before it runs.
+Future APIs must also enforce ownership, recipient rules, expiry and pickup times.
+
+For an existing database, run from the project root on a machine that can reach
+OCI, with a schema administrator's database credentials:
+
+```bash
+node scripts/migrate-whole-listings.mjs --check
+node scripts/migrate-whole-listings.mjs --apply
+```
+
+The default and `--check` are read-only. `--apply` runs
+`migrations/002_whole_listing_reservations.sql` after preflight. Coordinate a pause
+in writes with the schema owner while applying. Preflight rejects existing
+multiple claims for an item, multiple pickups for a claim, nonpositive pickup
+quantities, or a missing `before_pickup_insert` trigger. It never deletes records
+or repairs inventory. Existing partial pickups cannot be identified reliably
+from current remaining stock alone and need manual review if any were used.
+
+Run the upgrade once. MySQL DDL commits each statement separately: if an apply
+fails partway, inspect the constraints/triggers before resuming; do not assume
+rollback or rerun the entire migration blindly. Do not replay the initial,
+commented Drizzle introspection migration against existing tables. New databases
+created from `db/schema.sql` already contain these constraints and the guard, so
+must not run this upgrade.
+
+Verify after applying:
+
+```sql
+SHOW INDEX FROM Claim WHERE Key_name = 'uq_claim_item';
+SHOW INDEX FROM Pickup WHERE Key_name = 'uq_pickup_claim';
+SELECT TRIGGER_NAME, ACTION_ORDER
+FROM information_schema.TRIGGERS
+WHERE TRIGGER_SCHEMA = DATABASE() AND EVENT_OBJECT_TABLE = 'Pickup'
+ORDER BY ACTION_ORDER;
+```
+
+Both indexes must have `Non_unique = 0`; `before_pickup_whole_listing` must run
+before `before_pickup_insert`. To validate behavior, use a disposable test database:
+a second claim for the same item and a second completion for the same claim must
+fail; zero, negative, or partial pickup quantities must fail; one full completion
+must leave item quantity zero. Verify rejected inserts leave stock unchanged.
+Run two simultaneous claims for the same item and confirm only one succeeds.
+
+Local migration-runner checks:
+`node --test tests/whole-listing-migration.test.mjs`. These isolate the SQL client;
+they do not replace executing the constraints and triggers in a MySQL test database.

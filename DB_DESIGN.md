@@ -14,9 +14,9 @@ erDiagram
     RECIPIENT ||--o{ ACCEPTED_TIER : accepts
     RECIPIENT ||--o{ REFUSED_CATEGORY : refuses
     RECIPIENT ||--o{ ACCEPTANCE_RULE : "has pickup windows"
-    ITEM ||--o{ CLAIM : "claimed via"
+    ITEM ||--o| CLAIM : "reserved as a whole"
     RECIPIENT ||--o{ CLAIM : makes
-    CLAIM ||--o{ PICKUP : fulfilled_by
+    CLAIM ||--o| PICKUP : fulfilled_by
 
     ORGANIZATION {
         int org_id PK
@@ -107,9 +107,11 @@ erDiagram
 9. Pickup windows live in `AcceptanceRule`, one row per window: `day_of_week` reflects the day `pickup_start` falls on. `pickup_end` may be less than, greater than, or equal to `pickup_start` (supports overnight wraps and 24-hour/all-day windows). `UNIQUE(recipient_id, day_of_week, pickup_start)` blocks exact duplicate windows while still allowing multiple distinct windows per day.
 
 **Claims and pickups**
-10. A `Claim` represents a recipient reserving an `Item` before collection (`claim_time`, intended `pickup_time`).
-11. `Pickup` is the completed event and stays minimal — it references only `claim_id`; donor/recipient/item are derived by joining through `Claim` rather than duplicated. `actual_lbs` (nullable, `CHECK (actual_lbs IS NULL OR actual_lbs > 0)`) records the measured weight at pickup time, separate from the `quantity` the inventory trigger uses.
+10. A `Claim` reserves the entire `Item` before collection (`claim_time`, intended `pickup_time`). `UNIQUE (item_id)` allows at most one claim per listing, including concurrent inserts. Partial reservations, cancellation, and reassignment are not supported; create a new listing for a new offer.
+11. `UNIQUE (Pickup.claim_id)` allows at most one completed pickup per claim. `Pickup` is the completed event and stays minimal — it references only `claim_id`; donor/recipient/item are derived by joining through `Claim` rather than duplicated. `actual_lbs` (nullable, `CHECK (actual_lbs IS NULL OR actual_lbs > 0)`) records the measured weight at pickup time, separate from the `quantity` the inventory trigger uses.
 12. A `BEFORE INSERT` trigger on `Pickup` resolves the item through its `Claim`, rejects the insert (via `SIGNAL`) if the pickup's `quantity` exceeds the item's current `quantity`, and otherwise decrements `Item.quantity` by that amount — enforced this way because MySQL `CHECK` constraints cannot query another table.
+
+A `before_pickup_whole_listing` guard runs before `before_pickup_insert`. It locks the item row and requires the pickup quantity to equal the entire positive remaining stock. The existing inventory trigger alone decrements stock. The unique constraints and stock change participate in the same InnoDB insert statement, so a rejected completion rolls back its stock change.
 
 **Other**
 13. Impact-dashboard metrics (total lbs, lbs by tier, meals, pickup history) are **not** a stored entity — computed on demand via aggregate queries over `Pickup` → `Claim` → `Item` → `Organization`.

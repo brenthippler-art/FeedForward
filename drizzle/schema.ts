@@ -40,7 +40,7 @@ export const claim = mysqlTable("Claim", {
 	pickupTime: datetime("pickup_time", { mode: 'string'}).notNull(),
 },
 (table) => [
-	index("item_id").on(table.itemId),
+	unique("uq_claim_item").on(table.itemId),
 	index("recipient_id").on(table.recipientId),
 	primaryKey({ columns: [table.claimId], name: "Claim_claim_id"}),
 ]);
@@ -100,7 +100,7 @@ export const pickup = mysqlTable("Pickup", {
 	actualLbs: decimal("actual_lbs", { precision: 10, scale: 3 }),
 },
 (table) => [
-	index("claim_id").on(table.claimId),
+	unique("uq_pickup_claim").on(table.claimId),
 	primaryKey({ columns: [table.pickupId], name: "Pickup_pickup_id"}),
 	check("chk_pickup_actual_lbs", sql`((\`actual_lbs\` is null) or (\`actual_lbs\` > 0))`),
 ]);
