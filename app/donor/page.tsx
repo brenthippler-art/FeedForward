@@ -1,4 +1,5 @@
 import DonorForm from '@/components/DonorForm';
+import WhySafePanel from '@/components/WhySafePanel';
 import { requireRole } from '@/lib/session';
 
 export const metadata = { title: 'Post surplus' };
@@ -13,6 +14,7 @@ export default async function DonorPage() {
         <h1 className="font-display text-[34px] font-bold">Post tonight&apos;s surplus</h1>
       </div>
       <DonorForm />
+      <WhySafePanel />
     </main>
   );
 }

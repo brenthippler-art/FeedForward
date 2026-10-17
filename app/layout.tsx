@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import { Suspense } from "react";
 import SiteHeader, { SiteHeaderFallback } from "@/components/SiteHeader";
+import SiteFooter from '@/components/SiteFooter';
 import "./globals.css";
 
 // Fonts: downloaded at build time and served from our own server
@@ -84,7 +85,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${bricolage.variable} ${sourceSans.variable}`}>
-      <body className="min-h-screen bg-ground font-sans text-ink antialiased">
+      <body className="min-h-screen bg-ground font-sans text-ink antialiased flex flex-col">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-3 focus:font-bold focus:text-white"
@@ -95,6 +96,7 @@ export default function RootLayout({
           <SiteHeader />
         </Suspense>
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

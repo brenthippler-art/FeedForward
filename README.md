@@ -57,7 +57,7 @@ The database sits on a private subnet and is reachable only from the web server.
 Shapes are defined in [`types/index.ts`](types/index.ts). Errors return `{ error }` with a 400 or 500 status.
 
 ## Technical decisions
-- **The AI classifies; code decides.** Tiers come from `lib/tiers.ts`, built on USDA time-and-temperature guidance and the Swine Health Protection Act (Kentucky and Tennessee prohibit feeding meat-containing food waste to pigs). Matching is deterministic, so it's explainable and repeatable.
+- **The AI classifies; code decides.** Tiers come from `lib/tiers.ts`, built on USDA time-and-temperature guidance and the Swine Health Protection Act (Kentucky and Tennessee prohibit feeding food waste to pigs). Matching is deterministic, so it's explainable and repeatable.
 - **Shared types as a contract**, so frontend and backend could build in parallel against mock data.
 - **Advisory, not certification.** FeedForward cites its sources and requires human confirmation; it doesn't make legal or food-safety determinations.
 
