@@ -1,26 +1,21 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-ground: #F5F6F1;
+  --color-surface: #FFFFFF;
+  --color-ink: #18211B;
+  --color-muted: #4B554D;
+  --color-line: #D9DDD3;
+  --color-field: #B9BFB3;
+  --color-brand: #24603A;
+  --color-brand-dark: #1A4A2C;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-tier1: #1E4FA8;  --color-tier1-tint: #E3EBFA;  --color-tier1-text: #173E85;
+  --color-tier2: #B4410C;  --color-tier2-tint: #FBE8DC;  --color-tier2-text: #8A3109;
+  --color-tier3: #5B544C;  --color-tier3-tint: #ECE8E2;  --color-tier3-text: #423C35;
+  --color-warn-tint: #FFF3D1;  --color-warn-text: #6B4600;  --color-warn-line: #E8C66A;
+  --color-verified-tint: #E2F0E6;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --font-display: var(--font-bricolage), sans-serif;
+  --font-sans: var(--font-source-sans), system-ui, sans-serif;
 }
