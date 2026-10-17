@@ -38,7 +38,7 @@ export type AcceptanceRule = {
 };
 
 // What /api/extract returns: the AI's draft, before the donor confirms it
-export type FoodCategory = { 'produce' | 'dairy' | 'meat' | 'bakery' | 'cooked' | 'other' };
+export type FoodCategory = 'produce' | 'dairy' | 'meat' | 'bakery' | 'cooked' | 'other';
 
 export type DraftListing = {
   item: string;
