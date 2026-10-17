@@ -38,13 +38,19 @@ export type AcceptanceRule = {
 };
 
 // What /api/extract returns: the AI's draft, before the donor confirms it
+export type FoodCategory = { 'produce' | 'dairy' | 'meat' | 'bakery' | 'cooked' | 'other' };
+
 export type DraftListing = {
   item: string;
   quantity: number;
   unit: string;
   estimatedLbs: number | null;
   condition: string; // "unknown" when the donor didn't say
+  category: FoodCategory;
+  containsMeat: boolean;
+  hoursOut: number | null; // how long since it was harvested or cooked
   tier: Tier;        // a suggestion only; the donor can change it
+  tierReason: string; // why the AI suggested that tier
 };
 
 // A saved listing = the draft plus the fields the database adds
