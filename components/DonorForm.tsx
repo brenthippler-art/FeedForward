@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { DraftListing, Tier } from '@/types';
-import { mockDrafts } from '@/lib/mock';
-import TierBadge from './TierBadge';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { DraftListing, Tier } from "@/types";
+import { mockDrafts } from "@/lib/mock";
+import TierBadge from "./TierBadge";
 
 const EXAMPLE_TEXT =
-  'About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.';
+  "About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.";
 
 const inputClass =
-  'min-h-11 rounded-lg border-[1.5px] border-field bg-surface px-3 text-base text-ink';
+  "min-h-11 rounded-lg border-[1.5px] border-field bg-surface px-3 text-base text-ink";
 
 export default function DonorForm() {
   const router = useRouter();
@@ -28,12 +28,14 @@ export default function DonorForm() {
 
   function updateDraft(index: number, changes: Partial<DraftListing>) {
     setDrafts((current) =>
-      current.map((draft, i) => (i === index ? { ...draft, ...changes } : draft)),
+      current.map((draft, i) =>
+        i === index ? { ...draft, ...changes } : draft,
+      ),
     );
   }
 
   const needsAnswers = drafts.some(
-    (draft) => draft.category === 'cooked' && draft.hoursOut === null,
+    (draft) => draft.category === "cooked" && draft.hoursOut === null,
   );
 
   return (
@@ -43,11 +45,15 @@ export default function DonorForm() {
         aria-labelledby="describe-heading"
         className="flex min-w-0 flex-[1_1_340px] flex-col gap-3.5 rounded-2xl border border-line bg-surface p-6"
       >
-        <h2 id="describe-heading" className="font-display text-xl font-semibold">
+        <h2
+          id="describe-heading"
+          className="font-display text-xl font-semibold"
+        >
           1. Describe what&apos;s left
         </h2>
         <label htmlFor="surplus-text" className="text-[15px] text-muted">
-          Type it the way you&apos;d say it. The AI turns it into listings for you to check.
+          Type it the way you&apos;d say it. The AI turns it into listings for
+          you to check.
         </label>
         <textarea
           id="surplus-text"
@@ -59,12 +65,14 @@ export default function DonorForm() {
         <button
           type="button"
           onClick={handleDraft}
-          disabled={loading || text.trim() === ''}
+          disabled={loading || text.trim() === ""}
           className="min-h-12 rounded-[10px] bg-brand font-bold text-white hover:bg-brand-dark disabled:opacity-60"
         >
-          {loading ? 'Drafting…' : 'Draft listings with AI'}
+          {loading ? "Drafting…" : "Draft listings with AI"}
         </button>
-        <p className="text-sm text-muted">Nothing is posted until you confirm.</p>
+        <p className="text-sm text-muted">
+          Nothing is posted until you confirm.
+        </p>
       </section>
 
       {/* Right: review the AI's draft */}
@@ -82,20 +90,20 @@ export default function DonorForm() {
         ) : (
           <>
             {drafts.map((draft, index) => {
-              const isCooked = draft.category === 'cooked';
+              const isCooked = draft.category === "cooked";
               return (
                 <article
                   key={index}
                   className={`flex flex-col gap-3 rounded-xl p-4 ${
                     isCooked && draft.hoursOut === null
-                      ? 'border-[1.5px] border-warn-line bg-[#FFFBEF]'
-                      : 'border border-line'
+                      ? "border-[1.5px] border-warn-line bg-[#FFFBEF]"
+                      : "border border-line"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-lg font-bold">{draft.item}</h3>
                     <div className="flex flex-wrap gap-2">
-                      {draft.condition === 'unknown' && (
+                      {draft.condition === "unknown" && (
                         <span className="rounded-full bg-warn-tint px-3 py-1 text-sm font-bold text-warn-text">
                           Condition unknown
                         </span>
@@ -106,46 +114,79 @@ export default function DonorForm() {
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <div className="flex flex-col gap-1">
-                      <label htmlFor={`qty-${index}`} className="text-sm font-bold">Quantity</label>
+                      <label
+                        htmlFor={`qty-${index}`}
+                        className="text-sm font-bold"
+                      >
+                        Quantity
+                      </label>
                       <input
                         id={`qty-${index}`}
                         type="number"
                         min={0}
                         value={draft.quantity}
-                        onChange={(e) => updateDraft(index, { quantity: Number(e.target.value) })}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor={`unit-${index}`} className="text-sm font-bold">Unit</label>
-                      <input
-                        id={`unit-${index}`}
-                        value={draft.unit}
-                        onChange={(e) => updateDraft(index, { unit: e.target.value })}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor={`lbs-${index}`} className="text-sm font-bold">Est. lbs</label>
-                      <input
-                        id={`lbs-${index}`}
-                        type="number"
-                        min={0}
-                        value={draft.estimatedLbs ?? ''}
                         onChange={(e) =>
                           updateDraft(index, {
-                            estimatedLbs: e.target.value === '' ? null : Number(e.target.value),
+                            quantity: Number(e.target.value),
                           })
                         }
                         className={inputClass}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label htmlFor={`tier-${index}`} className="text-sm font-bold">Tier</label>
+                      <label
+                        htmlFor={`unit-${index}`}
+                        className="text-sm font-bold"
+                      >
+                        Unit
+                      </label>
+                      <input
+                        id={`unit-${index}`}
+                        value={draft.unit}
+                        onChange={(e) =>
+                          updateDraft(index, { unit: e.target.value })
+                        }
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label
+                        htmlFor={`lbs-${index}`}
+                        className="text-sm font-bold"
+                      >
+                        Est. lbs
+                      </label>
+                      <input
+                        id={`lbs-${index}`}
+                        type="number"
+                        min={0}
+                        value={draft.estimatedLbs ?? ""}
+                        onChange={(e) =>
+                          updateDraft(index, {
+                            estimatedLbs:
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value),
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label
+                        htmlFor={`tier-${index}`}
+                        className="text-sm font-bold"
+                      >
+                        Tier
+                      </label>
                       <select
                         id={`tier-${index}`}
                         value={draft.tier}
-                        onChange={(e) => updateDraft(index, { tier: Number(e.target.value) as Tier })}
+                        onChange={(e) =>
+                          updateDraft(index, {
+                            tier: Number(e.target.value) as Tier,
+                          })
+                        }
                         className={inputClass}
                       >
                         <option value={1}>1 · People</option>
@@ -156,26 +197,40 @@ export default function DonorForm() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label htmlFor={`cond-${index}`} className="text-sm font-bold">Condition</label>
+                    <label
+                      htmlFor={`cond-${index}`}
+                      className="text-sm font-bold"
+                    >
+                      Condition
+                    </label>
                     <input
                       id={`cond-${index}`}
                       value={draft.condition}
-                      onChange={(e) => updateDraft(index, { condition: e.target.value })}
+                      onChange={(e) =>
+                        updateDraft(index, { condition: e.target.value })
+                      }
                       className={inputClass}
                     />
                   </div>
 
                   {isCooked && (
                     <div className="flex flex-col gap-1">
-                      <label htmlFor={`hours-${index}`} className="text-sm font-bold text-warn-text">
-                        Cooked food: how long has it been out of the fridge or warmer?
+                      <label
+                        htmlFor={`hours-${index}`}
+                        className="text-sm font-bold text-warn-text"
+                      >
+                        Cooked food: how long has it been out of the fridge or
+                        warmer?
                       </label>
                       <select
                         id={`hours-${index}`}
-                        value={draft.hoursOut ?? ''}
+                        value={draft.hoursOut ?? ""}
                         onChange={(e) =>
                           updateDraft(index, {
-                            hoursOut: e.target.value === '' ? null : Number(e.target.value),
+                            hoursOut:
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value),
                           })
                         }
                         className={inputClass}
@@ -201,9 +256,9 @@ export default function DonorForm() {
               )}
               <button
                 type="button"
-                onClick={() => router.push('/recipient')}
+                onClick={() => router.push("/donor/matches")}
                 disabled={needsAnswers}
-                aria-describedby={needsAnswers ? 'confirm-help' : undefined}
+                aria-describedby={needsAnswers ? "confirm-help" : undefined}
                 className="min-h-12 rounded-[10px] bg-brand px-6 font-bold text-white hover:bg-brand-dark disabled:opacity-60"
               >
                 Confirm and find recipients

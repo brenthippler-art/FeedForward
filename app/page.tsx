@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import TierBadge from "@/components/TierBadge";
 import type { Tier } from "@/types";
+import { demoUsers } from "@/lib/demo-users";
+import { signIn } from "@/app/actions/session";
 
 export const metadata = {
   title: { absolute: "FeedForward: Route surplus food to its best use" },
@@ -104,21 +106,22 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/donor"
+                href="#sign-in"
                 className="inline-flex min-h-12 items-center rounded-full bg-surface px-7 font-bold uppercase tracking-wide text-brand hover:bg-ground"
               >
-                Post surplus
+                I&apos;m donating food
               </Link>
               <Link
-                href="/dashboard"
+                href="#sign-in"
                 className="inline-flex min-h-12 items-center rounded-full border-2 border-white px-7 font-bold uppercase tracking-wide text-white hover:bg-white/10"
               >
-                See the impact
+                I&apos;m receiving food
               </Link>
             </div>
           </div>
         </div>
       </section>
+      
 
       {/* Tiers */}
       <section
@@ -145,6 +148,50 @@ export default function Home() {
               </li>
             ))}
           </ol>
+        </div>
+      </section>
+      
+            {/* Demo sign-in */}
+      <section
+        id="sign-in"
+        aria-labelledby="signin-heading"
+        className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-6 px-6 py-14"
+      >
+        <div className="flex flex-col gap-2">
+          <h2 id="signin-heading" className="font-display text-[28px] font-bold">
+            Try the demo: choose who you are
+          </h2>
+          <p className="text-muted">
+            No password needed. Pick a sample organization to see FeedForward from their side.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {(['donor', 'recipient'] as const).map((role) => (
+            <div key={role} className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6">
+              <h3 className="font-display text-xl font-semibold">
+                {role === 'donor' ? 'I’m donating food' : 'I’m receiving food'}
+              </h3>
+              <ul className="flex flex-col gap-2">
+                {demoUsers
+                  .filter((user) => user.role === role)
+                  .map((user) => (
+                    <li key={user.orgId}>
+                      <form action={signIn}>
+                        <input type="hidden" name="orgId" value={user.orgId} />
+                        <button
+                          type="submit"
+                          className="flex min-h-14 w-full flex-wrap items-center justify-between gap-2 rounded-xl border border-line px-4 py-2 text-left hover:border-brand"
+                        >
+                          <span className="font-bold">{user.name}</span>
+                          <span className="text-sm text-muted">{user.description}</span>
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
