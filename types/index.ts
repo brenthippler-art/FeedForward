@@ -92,3 +92,17 @@ export type Impact = {
   pickups: number;
   recent: RecentPickup[]; // newest first, up to 5
 };
+
+export type AvailableListing = Listing & {
+  donorName: string;
+  distanceMiles: number;
+  readyAt: string;
+};
+
+export type RecipientPickup = {
+  claimId: number;
+  listing: AvailableListing;
+  pickupTime: string;
+  status: 'claimed' | 'picked_up';
+  actualLbs: number | null;
+};
