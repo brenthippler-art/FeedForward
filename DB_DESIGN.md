@@ -1,0 +1,117 @@
+# FeedForward — Database Design
+
+ERD and business rules for the MySQL schema, as designed step by step for the main workflow (donor lists surplus → tiered → recipient claims → pickup logged).
+
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    ORGANIZATION ||--|| DONOR : "is-a"
+    ORGANIZATION ||--|| RECIPIENT : "is-a"
+    DONOR ||--o{ ITEM : lists
+    CATEGORY ||--o{ ITEM : classifies
+    CATEGORY ||--o{ REFUSED_CATEGORY : "refused as"
+    RECIPIENT ||--o{ ACCEPTED_TIER : accepts
+    RECIPIENT ||--o{ REFUSED_CATEGORY : refuses
+    RECIPIENT ||--o{ ACCEPTANCE_RULE : "has pickup windows"
+    ITEM ||--o{ CLAIM : "claimed via"
+    RECIPIENT ||--o{ CLAIM : makes
+    CLAIM ||--o{ PICKUP : fulfilled_by
+
+    ORGANIZATION {
+        int org_id PK
+        varchar org_name
+        varchar street_address
+        varchar city
+        char state
+        char zip_code
+        datetime date_registered
+        varchar contact_name
+        varchar contact_email
+        varchar contact_phone
+    }
+    DONOR {
+        int org_id PK_FK
+    }
+    RECIPIENT {
+        int org_id PK_FK
+        varchar type
+    }
+    CATEGORY {
+        int category_id PK
+        varchar category_name
+    }
+    ITEM {
+        int item_id PK
+        int donor_id FK
+        int category_id FK
+        int quantity
+        decimal unit_weight
+        decimal total_weight "generated"
+        tinyint tier
+        varchar item_name "nullable, AI-extraction"
+        varchar unit "nullable, AI-extraction"
+        varchar condition "nullable, AI-extraction"
+        tinyint contains_meat "nullable, AI-extraction"
+        decimal hours_out "nullable, AI-extraction"
+        varchar tier_reason "nullable, AI-extraction"
+        datetime ready_at "nullable, AI-extraction"
+        datetime safe_until "nullable, AI-extraction"
+    }
+    ACCEPTED_TIER {
+        int recipient_id PK_FK
+        tinyint tier PK
+    }
+    REFUSED_CATEGORY {
+        int recipient_id PK_FK
+        int category_id PK_FK
+    }
+    ACCEPTANCE_RULE {
+        int rule_id PK
+        int recipient_id FK
+        varchar day_of_week
+        time pickup_start
+        time pickup_end
+    }
+    CLAIM {
+        int claim_id PK
+        int item_id FK
+        int recipient_id FK
+        datetime claim_time
+        datetime pickup_time
+    }
+    PICKUP {
+        int pickup_id PK
+        int claim_id FK
+        int quantity
+        datetime date_picked_up
+        decimal actual_lbs "nullable, measured weight"
+    }
+```
+
+## Business Rules
+
+**Organization hierarchy**
+1. `Donor` and `Recipient` are subclasses of `Organization` (table-per-subclass / class-table-inheritance): each one's primary key *is* the foreign key back to `Organization.org_id` — no separate surrogate ID — enforcing a strict 1-to-1 "is-a" relationship.
+2. `Recipient.type` must be one of `'pantry'`, `'farm'`, `'compost'`.
+
+**Items**
+3. `Item.tier` must be one of `1` (people), `2` (animal feed), `3` (compost).
+4. `Item.total_weight` is a generated column (`quantity * unit_weight`), never written directly — guarantees it can never drift out of sync.
+5. `Item.category_id` references the `Category` lookup table rather than a hardcoded enum, so new categories can be added via `INSERT` without a schema change.
+6. `Item` also carries 8 optional AI-extraction fields (`item_name`, `unit`, `condition`, `contains_meat`, `hours_out`, `tier_reason`, `ready_at`, `safe_until`), added by the backend/GenAI integration — these mirror `DraftListing`/`Listing` in `types/index.ts` and stay nullable since the AI may not always determine them.
+
+**Recipient acceptance rules (all normalized to satisfy 3NF — no multivalued attributes in one row)**
+7. Accepted tiers live in `AcceptedTier`, one row per `(recipient_id, tier)`.
+8. Refused categories live in `RefusedCategory`, referencing `Category` — refusing a category (e.g. "cookies") implicitly refuses every item under it (e.g. "Oreos Double Stuff Kroger").
+9. Pickup windows live in `AcceptanceRule`, one row per window: `day_of_week` reflects the day `pickup_start` falls on. `pickup_end` may be less than, greater than, or equal to `pickup_start` (supports overnight wraps and 24-hour/all-day windows). `UNIQUE(recipient_id, day_of_week, pickup_start)` blocks exact duplicate windows while still allowing multiple distinct windows per day.
+
+**Claims and pickups**
+10. A `Claim` represents a recipient reserving an `Item` before collection (`claim_time`, intended `pickup_time`).
+11. `Pickup` is the completed event and stays minimal — it references only `claim_id`; donor/recipient/item are derived by joining through `Claim` rather than duplicated. `actual_lbs` (nullable, `CHECK (actual_lbs IS NULL OR actual_lbs > 0)`) records the measured weight at pickup time, separate from the `quantity` the inventory trigger uses.
+12. A `BEFORE INSERT` trigger on `Pickup` resolves the item through its `Claim`, rejects the insert (via `SIGNAL`) if the pickup's `quantity` exceeds the item's current `quantity`, and otherwise decrements `Item.quantity` by that amount — enforced this way because MySQL `CHECK` constraints cannot query another table.
+
+**Other**
+13. Impact-dashboard metrics (total lbs, lbs by tier, meals, pickup history) are **not** a stored entity — computed on demand via aggregate queries over `Pickup` → `Claim` → `Item` → `Organization`.
+14. Zip codes and phone numbers are stored as fixed-format strings (`CHAR(5)` / `VARCHAR(20)`), not numeric types, to preserve leading zeros and formatting.
+15. Timestamp-on-insert columns (e.g. `date_registered`) use `DEFAULT CURRENT_TIMESTAMP`, not a generated column — MySQL generated columns must be deterministic and can't call `NOW()`.
