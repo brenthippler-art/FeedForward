@@ -110,10 +110,10 @@ export const mockImpact: Impact = {
   meals: 0, // 0 until the hustler supplies a sourced lbs-per-meal figure
   pickups: 38,
   recent: [
-    { pickupId: 4, date: '2026-10-16', item: 'Romaine lettuce', recipientName: 'Eastside Community Pantry', tier: 1, lbs: 31 },
-    { pickupId: 3, date: '2026-10-16', item: 'Potato peels', recipientName: 'Green Acres Compost', tier: 3, lbs: 14 },
-    { pickupId: 2, date: '2026-10-15', item: 'Vegetable trimmings', recipientName: 'Willow Creek Farm', tier: 2, lbs: 22 },
-    { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', recipientName: 'Hope Street Shelter Kitchen', tier: 1, lbs: 18 },
+    { pickupId: 4, date: '2026-10-16', item: 'Romaine lettuce', recipientName: 'Harmony Hall Community Pantry', tier: 1, lbs: 31 },
+    { pickupId: 3, date: '2026-10-16', item: 'Potato peels', recipientName: 'Last Call Compost', tier: 3, lbs: 14 },
+    { pickupId: 2, date: '2026-10-15', item: 'Vegetable trimmings', recipientName: 'Riverbend Goat & Garden', tier: 2, lbs: 22 },
+    { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', recipientName: 'Back Porch Supper Table', tier: 1, lbs: 18 },
   ],
 };
 
