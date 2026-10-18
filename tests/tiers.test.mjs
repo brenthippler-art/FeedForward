@@ -69,3 +69,20 @@ test('dairy and other categories default to tier 1 absent a sourced rule', () =>
   assert.equal(assignTier({ category: 'dairy', containsMeat: false, hoursOut: null, condition: 'unknown' }).tier, 1);
   assert.equal(assignTier({ category: 'other', containsMeat: false, hoursOut: null, condition: 'Unopened cans' }).tier, 1);
 });
+
+test('keyword matching does not trip on substrings inside unrelated words', () => {
+  assert.equal(assignTier({ category: 'bakery', containsMeat: false, hoursOut: null, condition: 'Sourdough loaves, baked this morning' }).tier, 1);
+  assert.equal(assignTier({ category: 'produce', containsMeat: false, hoursOut: null, condition: 'Trimmed green beans' }).tier, 1);
+  assert.equal(assignTier({ category: 'produce', containsMeat: false, hoursOut: null, condition: 'Fresh-scored melons' }).tier, 1);
+});
+
+test('keyword matching does not trip on legitimate food names that contain a keyword as a whole word', () => {
+  assert.equal(assignTier({ category: 'dairy', containsMeat: false, hoursOut: null, condition: 'Sour cream, sealed tubs' }).tier, 1);
+  assert.equal(assignTier({ category: 'produce', containsMeat: false, hoursOut: null, condition: 'Potatoes with skin on' }).tier, 1);
+});
+
+test('keyword matching still catches real spoilage and trim described as whole words', () => {
+  assert.equal(assignTier({ category: 'dairy', containsMeat: false, hoursOut: null, condition: 'Milk has gone sour' }).tier, 3);
+  assert.equal(assignTier({ category: 'produce', containsMeat: false, hoursOut: null, condition: 'Banana skins only' }).tier, 3);
+  assert.equal(assignTier({ category: 'produce', containsMeat: false, hoursOut: null, condition: 'Apple cores and peels' }).tier, 3);
+});
