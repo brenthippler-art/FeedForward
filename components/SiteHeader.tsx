@@ -1,17 +1,17 @@
-import Link from 'next/link';
-import { getCurrentUser } from '@/lib/session';
-import { signOut } from '@/app/actions/session';
-import HeaderNav from '@/components/HeaderNav';
-import SignInLink from '@/components/SignInLink';
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/session";
+import { signOut } from "@/app/actions/session";
+import HeaderNav from "@/components/HeaderNav";
+import SignInLink from "@/components/SignInLink";
 
 const navByRole = {
   donor: [
-    { href: '/donor', label: 'Post surplus' },
-    { href: '/dashboard', label: 'Impact' },
+    { href: "/donor", label: "Post surplus" },
+    { href: "/dashboard", label: "Impact" },
   ],
   recipient: [
-    { href: '/recipient', label: 'Available food' },
-    { href: '/dashboard', label: 'Impact' },
+    { href: "/recipient", label: "Available food" },
+    { href: "/dashboard", label: "Impact" },
   ],
 };
 
@@ -43,9 +43,8 @@ export default async function SiteHeader() {
             </div>
           </div>
         ) : (
-          <SignInLink className="inline-flex min-h-11 items-center rounded-[10px] bg-white px-4 font-bold text-brand"
-          >
-            Sign in
+          <SignInLink className="inline-flex min-h-11 items-center rounded-full bg-surface px-5 font-bold text-brand hover:bg-ground">
+            Try the demo
           </SignInLink>
         )}
       </div>
