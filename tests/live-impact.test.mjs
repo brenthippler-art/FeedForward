@@ -44,13 +44,14 @@ test('impact database failure is not presented as zero saved pickups', async () 
 });
 test('impact scopes both totals and history, and bases unmeasured pickups on collected rather than remaining quantity', async () => {
   const calls = [];
-  const service = load('../lib/impact.ts', { '@/lib/db': { pool: { async execute(sql, params) {
+  const service = load('../lib/impact.ts', { '@/lib/impact-stats': { LBS_PER_MEAL: 1.2 }, '@/lib/db': { pool: { async execute(sql, params) {
     calls.push({ sql, params });
     if (sql.includes('COUNT(*)')) return [[{ total_lbs: '10.125', pickups: 1, tier1: '10.125', tier2: '0', tier3: '0' }]];
     return [[{ pickup_id: 7, date: '2026-10-18', item: 'Carrots', donor_name: 'Kitchen', recipient_name: 'Pantry', tier: 1, lbs: '10.125' }]];
   } } } });
   const impact = await service.getImpact(11);
   assert.equal(impact.totalLbs, 10.125); assert.equal(impact.recent[0].lbs, 10.125); assert.equal(impact.pickups, 1);
+  assert.equal(impact.meals, 8); // 10.125 people-tier lbs / 1.2, rounded down
   assert.equal(calls.length, 2);
   for (const { sql, params } of calls) {
     assert.equal(JSON.stringify(params), '[11]');
