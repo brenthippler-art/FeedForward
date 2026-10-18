@@ -13,8 +13,11 @@ interface DonorRow extends RowDataPacket {
   hours_out: string | number | null; tier_reason: string | null; ready_at: string | null; safe_until: string | null;
   status: ListingStatus;
 }
-// Older seeded rows can have missing details; don't invent availability for them.
-export type PostedListing = Omit<DonorListing, 'readyAt' | 'containsMeat'> & { readyAt: string | null; containsMeat: boolean | null };
+// Who reserved a listing. The donor sees this only for their own items.
+export type Claimant = { name: string; contactName: string; phone: string; email: string; pickupTime: string };
+export type PostedListing = Omit<DonorListing, 'readyAt' | 'containsMeat'> & {
+  readyAt: string | null; containsMeat: boolean | null; claimedBy?: Claimant | null;
+};
 
 async function readDonorListings(database: Pool | PoolConnection, donorId: number, tier?: number, ids?: number[]): Promise<PostedListing[]> {
   const params: number[] = [donorId];

@@ -9,7 +9,7 @@ const tierStyles: Record<Tier, { label: string; className: string }> = {
 export default function TierBadge({ tier }: { tier: Tier }) {
   const style = tierStyles[tier];
   return (
-    <span className={`rounded-full px-3 py-1 text-sm font-bold ${style.className}`}>
+    <span className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${style.className}`}>
       {style.label}
     </span>
   );
