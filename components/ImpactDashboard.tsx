@@ -71,7 +71,7 @@ export default function ImpactDashboard({
   if (!impact) return <p role="status">Loading recorded impact…</p>;
   const isRecipient = Boolean(recipientName);
   const viewerName = recipientName ?? "All of FeedForward";
-  const summary = `${viewerName} recorded ${impact.pickups.toLocaleString("en-US")} completed pickup${impact.pickups === 1 ? "" : "s"}, totaling ${impact.totalLbs.toLocaleString("en-US")} lbs. By destination: ${impact.lbsByTier[1].toLocaleString("en-US")} lbs for people, ${impact.lbsByTier[2].toLocaleString("en-US")} lbs for animals, and ${impact.lbsByTier[3].toLocaleString("en-US")} lbs for compost That's about ${impact.meals.toLocaleString("en-US")} meals for people.`;
+  const summary = `${viewerName} recorded ${impact.pickups.toLocaleString("en-US")} completed pickup${impact.pickups === 1 ? "" : "s"}, totaling ${impact.totalLbs.toLocaleString("en-US")} lbs. By destination: ${impact.lbsByTier[1].toLocaleString("en-US")} lbs for people, ${impact.lbsByTier[2].toLocaleString("en-US")} lbs for animals, and ${impact.lbsByTier[3].toLocaleString("en-US")} lbs for compost. That's about ${impact.meals.toLocaleString("en-US")} meals for people.`;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 pb-14 pt-8">
@@ -136,7 +136,6 @@ export default function ImpactDashboard({
             Pounds by tier
           </h2>
           <TierBars lbsByTier={impact.lbsByTier} />
-          <p className="text-sm text-muted">Pounds from completed pickups</p>
         </section>
 
         <section
