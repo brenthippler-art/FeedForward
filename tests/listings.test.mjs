@@ -61,12 +61,13 @@ function route(user, read = async () => []) {
   return loadModule('../app/api/listings/route.ts', {
     '@/lib/session': { getCurrentUser: async () => user },
     '@/lib/bookable-listings': { getBookableListings: read },
+    '@/lib/donor-listings': { getDonorListings: read, createListings: async () => [] },
+    '@/lib/listing-input': {},
   }).GET;
 }
 
 for (const [name, user, query, status] of [
   ['signed out', null, '', 401],
-  ['donor identity', { role: 'donor', orgId: 1 }, '', 403],
   ['another recipient', { role: 'recipient', orgId: 11 }, '?recipientId=12', 403],
   ['invalid tier', { role: 'recipient', orgId: 11 }, '?tier=4', 400],
   ['empty tier', { role: 'recipient', orgId: 11 }, '?tier=', 400],
