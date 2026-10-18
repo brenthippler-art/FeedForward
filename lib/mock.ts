@@ -1,4 +1,4 @@
-import type { DraftListing, Listing, RecipientMatch, Impact, AvailableListing, Tier } from '@/types';
+import type { DraftListing, Listing, RecipientMatch, Impact, Tier } from '@/types';
 import type { DemoUser } from '@/lib/demo-users';
 
 // Stand-in for what /api/extract will return. Same shape as the real thing.
@@ -117,56 +117,6 @@ export const mockImpact: Impact = {
     { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', donorName: 'Two-Step Hot Chicken', recipientName: 'Back Porch Supper Table', tier: 1, lbs: 18 },
   ],
 };
-
-export const mockAvailable: AvailableListing[] = [
-  {
-    id: 201, donorId: 1, donorName: 'Two-Step Hot Chicken', distanceMiles: 1.8,
-    item: 'Romaine lettuce', quantity: 30, unit: 'lbs', estimatedLbs: 30,
-    condition: 'Outer leaves wilted', category: 'produce', containsMeat: false, hoursOut: null,
-    tier: 1, tierReason: 'Fresh produce in known condition.',
-    readyAt: '2026-10-17T22:00:00Z', safeUntil: '2026-10-18T01:00:00Z', status: 'available',
-  },
-  {
-    id: 202, donorId: 2, donorName: 'Athens of the South Dining Hall', distanceMiles: 2.6,
-    item: 'Buttermilk biscuits', quantity: 4, unit: 'dozen', estimatedLbs: 12,
-    condition: 'Baked this morning', category: 'bakery', containsMeat: false, hoursOut: null,
-    tier: 1, tierReason: 'Baked goods in known condition.',
-    readyAt: '2026-10-17T21:00:00Z', safeUntil: '2026-10-18T03:00:00Z', status: 'available',
-  },
-  {
-    id: 203, donorId: 1, donorName: 'Two-Step Hot Chicken', distanceMiles: 1.8,
-    item: 'Cooked rice', quantity: 2, unit: 'trays', estimatedLbs: 12,
-    condition: 'Held hot, out 1 hour', category: 'cooked', containsMeat: false, hoursOut: 1,
-    tier: 1, tierReason: 'Cooked food out less than 2 hours.',
-    readyAt: '2026-10-17T22:00:00Z', safeUntil: '2026-10-17T23:00:00Z', status: 'available',
-  },
-  {
-    id: 204, donorId: 2, donorName: 'Athens of the South Dining Hall', distanceMiles: 2.6,
-    item: 'Vegetable trimmings', quantity: 22, unit: 'lbs', estimatedLbs: 22,
-    condition: 'Raw, kept separate from meat', category: 'produce', containsMeat: false, hoursOut: null,
-    tier: 2, tierReason: 'Plant-based and never touched meat, so it can feed goats and chickens.',
-    readyAt: '2026-10-17T21:00:00Z', safeUntil: null, status: 'available',
-  },
-  {
-    id: 205, donorId: 1, donorName: 'Two-Step Hot Chicken', distanceMiles: 1.8,
-    item: 'Chicken bones and fryer scraps', quantity: 1, unit: 'bucket', estimatedLbs: 15,
-    condition: 'Mixed with breading', category: 'meat', containsMeat: true, hoursOut: null,
-    tier: 3, tierReason: 'Contains meat, so compost only.',
-    readyAt: '2026-10-17T22:00:00Z', safeUntil: null, status: 'available',
-  },
-];
-
-export const mockRecipientTiers: Record<number, Tier[]> = {
-  11: [1],
-  12: [1],
-  13: [2],
-  14: [3],
-};
-
-export function mockListingsFor(recipientId: number) {
-  const tiers = mockRecipientTiers[recipientId] ?? [];
-  return mockAvailable.filter((listing) => tiers.includes(listing.tier));
-}
 
 export function mockImpactFor(user?: DemoUser | null): Impact {
   if (!user || user.role === 'donor') return mockImpact;

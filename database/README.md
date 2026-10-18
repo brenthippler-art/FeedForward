@@ -36,8 +36,7 @@ old hardcoded category union.
 
 The recipient screen reads listings and saved claims and books through the POST
 claims API below. The screen does not yet submit pickup confirmations. The pickup API below
-records completion; neither endpoint certifies food safety. The older `RecipientBoard` remains an unused demo component
-with local-only actions.
+records completion; neither endpoint certifies food safety.
 
 ## Verify on the OCI-connected application
 

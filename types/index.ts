@@ -99,11 +99,3 @@ export type AvailableListing = Listing & {
   distanceMiles: number;
   readyAt: string;
 };
-
-export type RecipientPickup = {
-  claimId: number;
-  listing: AvailableListing;
-  pickupTime: string;
-  status: 'claimed' | 'picked_up';
-  actualLbs: number | null;
-};
