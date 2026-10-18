@@ -22,19 +22,14 @@ interface RecentRow extends RowDataPacket {
 
 const RECENT_LIMIT = 5;
 
-// lbs is COALESCE(actual_lbs, total_weight): prefer the measured weight at
+// lbs is COALESCE(actual_lbs, pickup quantity * unit weight): prefer the measured weight at
 // pickup, fall back to the item's estimate when actual_lbs wasn't recorded.
-const LBS_EXPR = 'COALESCE(p.actual_lbs, i.total_weight)';
+const LBS_EXPR = 'COALESCE(p.actual_lbs, p.quantity * i.unit_weight)';
 
 export async function getImpact(orgId?: number): Promise<Impact> {
-  // Donors (and anonymous visitors) see platform-wide totals; only recipients
-  // get a view scoped to their own received pickups. An orgId that isn't a
-  // recognized recipient falls back to the global view rather than erroring.
-  let recipientId: number | undefined;
-  if (orgId !== undefined) {
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT org_id FROM Recipient WHERE org_id = ?', [orgId]);
-    if (rows.length) recipientId = orgId;
-  }
+  // The API chooses the scope from the session. An explicit recipient scope
+  // never falls back to platform totals, even if the recipient was removed.
+  const recipientId = orgId;
 
   const scopeClause = recipientId !== undefined ? 'WHERE c.recipient_id = ?' : '';
   const scopeParams = recipientId !== undefined ? [recipientId] : [];

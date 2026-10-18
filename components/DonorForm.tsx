@@ -7,6 +7,7 @@ import { FOOD_CATEGORIES, ListingError, parseListingRequest } from '@/lib/listin
 import { mockDrafts } from '@/lib/mock';
 import { formatPickupDateTime } from '@/lib/format';
 import TierBadge from './TierBadge';
+import Link from 'next/link';
 
 type EditableItem = {
   key: string; item: string; quantity: string; unit: string; unitWeight: string;
@@ -203,7 +204,7 @@ export default function DonorForm() {
       {reading && <p role="status">Loading posted food…</p>}
       {readError && <p role="alert" className="text-warn-text">{readError}</p>}
       {!reading && !readError && posted.length === 0 && <p className="text-muted">You have not posted any food yet.</p>}
-      <ul className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">{posted.map((listing) => <li key={listing.id} className="flex min-w-0 flex-col gap-2 rounded-xl border border-line bg-surface p-5"><h3 className="font-display text-lg font-semibold">{listing.item}</h3><TierBadge tier={listing.tier} /><p>{listing.quantity} {listing.unit} · {listing.estimatedLbs} lbs remaining</p><p className="font-semibold">{listing.status === 'picked_up' ? 'Picked up' : listing.status === 'claimed' ? 'Reserved' : 'Posted'}</p><p className="text-sm text-muted">Listing #{listing.id}{listing.readyAt ? ` · Ready ${formatPickupDateTime(listing.readyAt)}` : ''}</p>{listing.safeUntil && <p className="text-sm text-muted">Pickup deadline: {formatPickupDateTime(listing.safeUntil)}</p>}</li>)}</ul>
+      <ul className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">{posted.map((listing) => <li key={listing.id} className="flex min-w-0 flex-col gap-2 rounded-xl border border-line bg-surface p-5"><h3 className="font-display text-lg font-semibold">{listing.item}</h3><TierBadge tier={listing.tier} /><p>{listing.quantity} {listing.unit} · {listing.estimatedLbs} lbs remaining</p><p className="font-semibold">{listing.status === 'picked_up' ? 'Picked up' : listing.status === 'claimed' ? 'Reserved' : 'Posted'}</p><p className="text-sm text-muted">Listing #{listing.id}{listing.readyAt ? ` · Ready ${formatPickupDateTime(listing.readyAt)}` : ''}</p>{listing.status === 'available' && <Link href={`/donor/matches?listingId=${listing.id}`} className="min-h-11 inline-flex items-center font-semibold text-brand underline">View suggested recipients</Link>}{listing.safeUntil && <p className="text-sm text-muted">Pickup deadline: {formatPickupDateTime(listing.safeUntil)}</p>}</li>)}</ul>
     </section>
   </div>;
 }
