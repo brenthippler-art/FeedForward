@@ -119,4 +119,14 @@ export const kitchenQuotes: PullQuoteData[] = [
       href: 'https://www.pbs.org/newshour/show/top-chef-tom-colicchio-on-americas-staggering-waste-of-food',
     },
   },
+    {
+    quote: 'When we throw away food, we are collectively wasting resources, wasting opportunity and wasting dignity.',
+    name: 'Massimo Bottura',
+    role: 'Chef, Osteria Francescana',
+    source: {
+      name: 'UN Environment Programme',
+      year: '2025',
+      href: 'https://www.unep.org/news-and-stories/story/chef-massimo-bottura-tackling-food-waste-about-creating-beauty-through',
+    },
+  },
 ];
