@@ -34,11 +34,10 @@ Distance is null because the organization schema has no coordinates. Unknown
 meat content remains null. Category names are not restricted to the frontend's
 old hardcoded category union.
 
-The recipient screen currently only displays listings. The POST claims API
-below validates and persists bookings; the UI is not connected to it yet.
-Neither this screen nor the API certifies food safety or records pickups. The recipient screen does
-not offer claim controls until a transactional booking API is implemented. The
-older `RecipientBoard` remains an unused demo component with local-only actions.
+The recipient screen reads listings and saved claims and books through the POST
+claims API below. Neither the screen nor the API certifies food safety or records
+completed pickups. The older `RecipientBoard` remains an unused demo component
+with local-only actions.
 
 ## Verify on the OCI-connected application
 
@@ -149,7 +148,7 @@ share this timezone; supporting other zones needs an organization timezone field
 Apply the whole-listing upgrade above before enabling writes. The database
 unique constraint is a second defense against duplicate claims. The application
 also serializes attempts on the Item row. A claim never changes stock or inserts
-a Pickup. GET /api/claims and recipient booking controls are separate next steps.
+a Pickup. Saved claims and booking controls are described below.
 
 To verify on OCI, sign in as a seeded recipient and POST JSON through browser
 DevTools or an authenticated API client. Use a listing accepted by the recipient,
@@ -161,3 +160,46 @@ windows, and two simultaneous requests for the same item in a test database.
 Local checks: `node --test tests/*.test.mjs`. Claim tests include the policy,
 transaction rollback/release, route responses, and a simulated concurrent lock.
 They do not exercise a live MySQL transaction or replace OCI verification.
+
+
+## Saved pickups and booking controls
+
+`GET /api/claims` returns up to 100 reservations for the signed-in recipient.
+The array contains `claimId`, `listing` (id, item, donorName, quantity, unit,
+estimatedLbs, tier), `pickupTime`, `status` (`claimed` or `picked_up`), and
+`actualLbs` (number or null). Pending reservations are first, in scheduled order;
+completed pickups follow, newest completion first. Past reservations stay visible
+and acceptance-rule changes do not erase history. An existing Pickup row marks
+completion even if its measured weight was never recorded. Completed quantities
+come from Pickup.quantity, since Item.quantity is decremented at collection.
+
+The session owns the recipient ID. An optional `recipientId` query parameter
+must match it. Signed-out requests get 401, donors or other-recipient requests
+get 403, and read failures get 503. Responses use `Cache-Control: no-store`.
+
+`GET /api/listings` also adds `pickupSlots`, a UTC ISO string array generated from
+the database clock, listing availability, and the recipient's Central-time pickup
+rules. Options are future half-hour appointments, strictly before expiry, limited
+to the next seven days and the first 48 matching options. Tier 1 without a donor
+pickup deadline has no booking options. An empty array leaves the listing visible
+with a message explaining that no time matches; it does not infer safe availability.
+The POST API remains the authority and revalidates every booking.
+
+The recipient page fetches both arrays independently and shows existing bookings
+under Your pickups after reload. During POST it disables booking and refresh
+controls. On success it displays the confirmed reservation, then refreshes both
+resources. Conflict or uncertain network outcomes also trigger a read refresh;
+there is no automatic POST retry. A failed read is reported explicitly and blocks
+booking until refreshed, while retaining previously loaded records for context.
+
+PickupCard displays pending reservations and already completed records from the
+database. The live screen does not expose the old local-only completion action;
+completion controls will be connected when POST /api/pickups is implemented.
+No new schema migration is required for this integration.
+
+Verification after deploying: sign in as a recipient; reserve an item at an offered
+time; confirm it disappears from Available food and appears in Your pickups;
+reload the page and confirm the same claim persists. A second recipient must not
+see that reservation. Test a conflict with another booking and a read failure.
+Browser checks during development can mock the API to test these cases without
+creating live reservations. Database SELECT verification can be performed separately.

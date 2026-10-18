@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import type { RecipientPickup } from '@/types';
+import type { RecipientReservation } from '@/lib/recipient-claims';
 import TierBadge from './TierBadge';
-import { formatTime } from '@/lib/format';
+import { formatPickupDateTime } from '@/lib/format';
 
 type PickupCardProps = {
-  pickup: RecipientPickup;
-  onPickedUp: (claimId: number, actualLbs: number) => void;
+  pickup: RecipientReservation;
+  onPickedUp?: (claimId: number, actualLbs: number) => void;
 };
 
 export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
@@ -30,14 +30,18 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
         <div className="flex flex-col gap-0.5">
           <h3 className="font-display text-lg font-semibold">{listing.item}</h3>
           <p className="text-muted">
-            {listing.donorName} · {formatTime(pickup.pickupTime)}
+            {listing.donorName} · {formatPickupDateTime(pickup.pickupTime)}
           </p>
         </div>
         <TierBadge tier={listing.tier} />
       </div>
 
+      <p className="text-sm text-muted">{listing.quantity} {listing.unit}</p>
+
       {pickup.status === 'picked_up' ? (
-        <p className="font-semibold text-brand-dark">✓ Picked up · {pickup.actualLbs} lbs</p>
+        <p className="font-semibold text-brand-dark">✓ Picked up{pickup.actualLbs !== null ? ` · ${pickup.actualLbs} lbs` : ' · Weight not recorded'}</p>
+      ) : !onPickedUp ? (
+        <p className="font-semibold text-brand-dark">Reserved · Pickup confirmation will be available soon.</p>
       ) : logging ? (
         <form
           onSubmit={(event) => {

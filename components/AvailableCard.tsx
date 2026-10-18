@@ -3,16 +3,19 @@
 import { useId, useState } from 'react';
 import type { RecipientListing } from '@/lib/listings';
 import TierBadge from './TierBadge';
-import { formatTime } from '@/lib/format';
+import { formatPickupDateTime } from '@/lib/format';
 import { pickupSlots } from '@/lib/pickup-slots';
 
 type AvailableCardProps = {
   listing: RecipientListing;
   onClaim?: (listing: RecipientListing, pickupTime: string) => void;
+  pickupTimes?: string[];
+  booking?: boolean;
+  disabled?: boolean;
 };
 
-export default function AvailableCard({ listing, onClaim }: AvailableCardProps) {
-  const slots = onClaim ? pickupSlots(listing.readyAt, listing.safeUntil) : [];
+export default function AvailableCard({ listing, onClaim, pickupTimes, booking = false, disabled = false }: AvailableCardProps) {
+  const slots = pickupTimes ?? (onClaim ? pickupSlots(listing.readyAt, listing.safeUntil) : []);
   const [pickupTime, setPickupTime] = useState('');
   const selectId = useId();
 
@@ -43,7 +46,7 @@ export default function AvailableCard({ listing, onClaim }: AvailableCardProps) 
         <div>
           <dt className="text-sm text-muted">Safe until</dt>
           <dd className="font-semibold">
-            {listing.safeUntil ? formatTime(listing.safeUntil) : 'Not provided'}
+            {listing.safeUntil ? formatPickupDateTime(listing.safeUntil) : 'Not provided'}
           </dd>
         </div>
       </dl>
@@ -54,17 +57,17 @@ export default function AvailableCard({ listing, onClaim }: AvailableCardProps) 
         <p className="border-t border-line pt-4 text-sm text-muted">Pickup booking is not available yet.</p>
       ) : slots.length === 0 ? (
         <p className="border-t border-line pt-4 font-semibold text-warn-text">
-          The safe pickup window has passed.
+          No pickup times match your organization’s windows and this listing’s availability in the next seven days.
         </p>
       ) : (
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (pickupTime) onClaim(listing, pickupTime);
+            if (pickupTime && slots.includes(pickupTime) && !disabled) onClaim(listing, pickupTime);
           }}
           className="flex flex-wrap items-end gap-3 border-t border-line pt-4"
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
             <label htmlFor={selectId} className="text-sm font-bold">
               Pickup time
             </label>
@@ -73,22 +76,23 @@ export default function AvailableCard({ listing, onClaim }: AvailableCardProps) 
               value={pickupTime}
               onChange={(event) => setPickupTime(event.target.value)}
               required
-              className="min-h-11 rounded-lg border-[1.5px] border-field bg-surface px-3"
+              disabled={disabled}
+              className="min-h-11 w-full min-w-0 max-w-full rounded-lg border-[1.5px] border-field bg-surface px-3 text-base"
             >
               <option value="">Choose a time</option>
               {slots.map((slot) => (
                 <option key={slot} value={slot}>
-                  {formatTime(slot)}
+                  {formatPickupDateTime(slot)}
                 </option>
               ))}
             </select>
           </div>
           <button
             type="submit"
-            disabled={!pickupTime}
+            disabled={disabled || !pickupTime || !slots.includes(pickupTime)}
             className="min-h-12 rounded-[10px] bg-brand px-5 font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Claim<span className="sr-only"> {listing.item}</span>
+            {booking ? 'Claiming…' : 'Claim'}<span className="sr-only"> {listing.item}</span>
           </button>
         </form>
       )}
