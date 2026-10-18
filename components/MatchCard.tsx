@@ -1,6 +1,7 @@
 'use client';
 
-import type { RecipientMatch, OrgType, Tier } from '@/types';
+import type { OrgType, Tier } from '@/types';
+import type { MatchResult } from '@/lib/matches';
 import TierBadge from './TierBadge';
 
 const typeLabels: Record<OrgType, string> = {
@@ -18,7 +19,7 @@ const typeTier: Record<OrgType, Tier> = {
 };
 
 type MatchCardProps = {
-  match: RecipientMatch;
+  match: MatchResult;
   expanded: boolean;
   chosen: boolean;
   onToggle: () => void;
@@ -46,7 +47,7 @@ export default function MatchCard({ match, expanded, chosen, onToggle, onChoose 
           <div className="flex flex-col gap-0.5">
             <h3 className="font-display text-[21px] font-semibold">{recipient.name}</h3>
             <p className="text-[15px] text-muted">
-              {typeLabels[recipient.type]} · {distanceMiles.toFixed(1)} mi
+              {typeLabels[recipient.type]}{distanceMiles !== null && ` · ${distanceMiles.toFixed(1)} mi`}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
