@@ -166,7 +166,12 @@ export default function ImpactDashboard({
         <h2 id="recent-heading" className="font-display text-xl font-semibold">
           Recent pickups
         </h2>
-        <div className="overflow-x-auto">
+        <div
+          role="region"
+          aria-label="Recent pickups table (scrolls sideways)"
+          tabIndex={0}
+          className="overflow-x-auto"
+        >
           <table className="w-full min-w-[620px] border-collapse text-left">
             <thead>
               <tr className="text-sm text-muted">

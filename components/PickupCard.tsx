@@ -65,7 +65,7 @@ export default function PickupCard({
 
       {pickup.status === "picked_up" ? (
         <p className="font-semibold text-brand-dark">
-          ✓ Picked up
+          <span aria-hidden="true">✓ </span>Picked up
           {pickup.actualLbs !== null
             ? ` · ${pickup.actualLbs} lbs`
             : " · Weight not recorded"}
