@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { RecipientMatch } from '@/types';
+import type { MatchResult } from '@/lib/matches';
 import MatchCard from './MatchCard';
 
-export default function MatchList({ matches }: { matches: RecipientMatch[] }) {
+export default function MatchList({ matches }: { matches: MatchResult[] }) {
   const [openId, setOpenId] = useState<number | null>(matches[0]?.recipient.id ?? null);
   const [chosenId, setChosenId] = useState<number | null>(null);
 
