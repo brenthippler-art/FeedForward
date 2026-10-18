@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
+
 type StatTileProps = {
   label: string;
   value: string;
-  note: string;
+  note: ReactNode;
 };
 
 export default function StatTile({ label, value, note }: StatTileProps) {

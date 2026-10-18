@@ -130,3 +130,11 @@ export const kitchenQuotes: PullQuoteData[] = [
     },
   },
 ];
+
+// Feeding America counts about 1.2 lbs of food as one meal.
+// Only people-tier pounds become meals; animal feed and compost do not.
+export const LBS_PER_MEAL = 1.2;
+export const lbsPerMealSource = {
+  name: 'Feeding America',
+  href: 'https://www.feedingamerica.org/ways-to-give/faq/about-our-claims',
+};

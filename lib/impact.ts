@@ -1,6 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
 import { pool } from '@/lib/db';
 import type { Impact, RecentPickup, Tier } from '@/types';
+import { LBS_PER_MEAL } from '@/lib/impact-stats';
 
 interface TotalsRow extends RowDataPacket {
   total_lbs: string | number;
@@ -81,7 +82,7 @@ export async function getImpact(orgId?: number): Promise<Impact> {
   return {
     totalLbs: Number(totals.total_lbs),
     lbsByTier: { 1: Number(totals.tier1), 2: Number(totals.tier2), 3: Number(totals.tier3) },
-    meals: 0, // no sourced lbs-per-meal conversion figure yet
+    meals: Math.floor(Number(totals.tier1) / LBS_PER_MEAL), // convert lbs to meals
     pickups: Number(totals.pickups),
     recent,
   };
