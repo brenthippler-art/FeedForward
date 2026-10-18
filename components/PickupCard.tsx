@@ -7,10 +7,12 @@ import { formatPickupDateTime } from '@/lib/format';
 
 type PickupCardProps = {
   pickup: RecipientReservation;
+  saving?: boolean;
+  disabled?: boolean;
   onPickedUp?: (claimId: number, actualLbs: number) => void;
 };
 
-export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
+export default function PickupCard({ pickup, onPickedUp, saving = false, disabled = false }: PickupCardProps) {
   const { listing } = pickup;
   const [logging, setLogging] = useState(false);
   const [lbs, setLbs] = useState(listing.estimatedLbs?.toString() ?? '');
@@ -18,7 +20,8 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const weight = Number(lbs);
-  const valid = lbs !== '' && weight > 0;
+  const valid = lbs !== '' && Number.isFinite(weight) && weight >= 0.001 && weight <= 9999999.999
+    && Math.abs(weight * 1000 - Math.round(weight * 1000)) <= 0.000001;
 
   useEffect(() => {
     if (logging) inputRef.current?.focus();
@@ -46,7 +49,7 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (valid) onPickedUp(pickup.claimId, weight);
+            if (valid && !disabled && !saving) onPickedUp(pickup.claimId, weight);
           }}
           className="flex flex-wrap items-end gap-3"
         >
@@ -59,8 +62,10 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
               id={inputId}
               type="number"
               inputMode="decimal"
-              min="0.1"
-              step="0.1"
+              min="0.001"
+              max="9999999.999"
+              disabled={disabled || saving}
+              step="0.001"
               value={lbs}
               onChange={(event) => setLbs(event.target.value)}
               required
@@ -69,13 +74,14 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
           </div>
           <button
             type="submit"
-            disabled={!valid}
+            disabled={!valid || disabled || saving}
             className="min-h-12 rounded-[10px] bg-brand px-5 font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Confirm pickup
+            {saving ? 'Saving pickup…' : 'Confirm pickup'}
           </button>
           <button
             type="button"
+            disabled={saving || disabled}
             onClick={() => setLogging(false)}
             className="min-h-11 px-3 font-semibold text-brand underline"
           >
@@ -85,6 +91,7 @@ export default function PickupCard({ pickup, onPickedUp }: PickupCardProps) {
       ) : (
         <button
           type="button"
+          disabled={disabled || saving}
           onClick={() => setLogging(true)}
           className="min-h-12 self-start rounded-[10px] border-[1.5px] border-brand bg-surface px-5 font-bold text-brand"
         >

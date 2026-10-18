@@ -35,8 +35,8 @@ meat content remains null. Category names are not restricted to the frontend's
 old hardcoded category union.
 
 The recipient screen reads listings and saved claims and books through the POST
-claims API below. The screen does not yet submit pickup confirmations. The pickup API below
-records completion; neither endpoint certifies food safety.
+claims API below. The recipient screen submits pickup confirmations through the pickup API below.
+Neither endpoint certifies food safety.
 
 ## Verify on the OCI-connected application
 
@@ -310,6 +310,36 @@ since a connection failure during commit can leave the outcome uncertain.
 
 Prerequisites: `Pickup.actual_lbs`, unique `uq_pickup_claim`, the whole-listing
 guard, and the existing inventory trigger must be installed. This endpoint does
-not run migrations. The recipient button is intentionally not wired in this API
-change. API/service tests use isolated database doubles and do not verify OCI SQL,
+not run migrations. The recipient button posts to this endpoint and reloads saved pickups after
+every write attempt. API/service tests use isolated database doubles and do not verify OCI SQL,
 trigger execution, or real concurrent database transactions.
+
+
+## Live workflow screens
+
+- `/recipient` loads saved reservations, submits actual weight to `/api/pickups`,
+  disables actions during a write/reload, and rereads saved state after success or
+  failure. A lost POST response is never retried automatically.
+- Donor posted-food cards link to `/donor/matches?listingId=...`. The page loads
+  the donor's saved listings and `/api/matches` for the selected available item.
+  Reserved, empty, or expired items cannot return match results. Suggestions do
+  not assign a recipient or create a claim; recipients book from their own account.
+- `/dashboard` reads `/api/impact` with loading, retry and refresh states. Signed-in
+  recipients receive their own totals; donors and anonymous visitors receive
+  platform-wide totals, clearly labeled. The endpoint derives scope from the
+  session and rejects another organization's ID.
+- Impact is all-time completed-pickup data, not monthly or AI-generated copy.
+  Measured weight is preferred; old unmeasured rows use Pickup.quantity times
+  Item.unit_weight, since remaining Item.quantity is decremented by the trigger.
+  Meal conversions remain unavailable rather than invented.
+
+After deployment, verify: donor posts and reloads food → views that saved item's
+suggested recipients → recipient reserves it → at the reserved time, within the
+acceptance window and before expiry, confirms actual weight → refresh still
+shows Picked up → dashboard displays the recorded weight and completed pickup.
+An early completion or expired pickup is rejected by the existing backend rules.
+
+Local browser verification uses controlled API fixtures for loading, error/retry,
+selection, completion, repeat-click prevention and lost-response reconciliation.
+It does not execute SQL or mutate the OCI demo database; verify database triggers
+and completion on the deployed application before declaring the live flow tested.

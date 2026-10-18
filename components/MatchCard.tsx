@@ -21,19 +21,17 @@ const typeTier: Record<OrgType, Tier> = {
 type MatchCardProps = {
   match: MatchResult;
   expanded: boolean;
-  chosen: boolean;
   onToggle: () => void;
-  onChoose: () => void;
 };
 
-export default function MatchCard({ match, expanded, chosen, onToggle, onChoose }: MatchCardProps) {
+export default function MatchCard({ match, expanded, onToggle }: MatchCardProps) {
   const { recipient, distanceMiles, reasons, aiSummary } = match;
   const detailsId = `contact-${recipient.id}`;
 
   return (
     <article
       className={`overflow-hidden rounded-2xl bg-surface ${
-        expanded || chosen ? 'border-2 border-brand' : 'border border-line'
+        expanded ? 'border-2 border-brand' : 'border border-line'
       }`}
     >
       <button
@@ -92,14 +90,7 @@ export default function MatchCard({ match, expanded, chosen, onToggle, onChoose 
               </dd>
             </div>
           </dl>
-          <button
-            type="button"
-            onClick={onChoose}
-            disabled={chosen}
-            className="min-h-12 rounded-[10px] bg-brand px-6 font-bold text-white hover:bg-brand-dark disabled:opacity-60"
-          >
-            {chosen ? 'Chosen' : 'Choose this recipient'}
-          </button>
+
         </div>
       )}
     </article>

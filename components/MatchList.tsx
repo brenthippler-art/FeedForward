@@ -1,56 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import type { MatchResult } from '@/lib/matches';
 import MatchCard from './MatchCard';
 
 export default function MatchList({ matches }: { matches: MatchResult[] }) {
   const [openId, setOpenId] = useState<number | null>(matches[0]?.recipient.id ?? null);
-  const [chosenId, setChosenId] = useState<number | null>(null);
-
-  const chosen = matches.find((m) => m.recipient.id === chosenId);
-
-  if (matches.length === 0) {
-    return (
-      <div className="rounded-2xl border border-line bg-surface p-6">
-        <p className="font-semibold">No recipients match this listing right now.</p>
-        <p className="mt-1 text-muted">Consider changing it to Tier 3 so a compost site can take it.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      {chosen && (
-        <div role="status" className="rounded-2xl border-2 border-brand bg-verified-tint p-5">
-          <p className="font-bold">
-            {chosen.recipient.name} has been chosen. They&apos;ll confirm a pickup time.
-          </p>
-          <Link href="/dashboard" className="mt-1 inline-block font-semibold text-brand underline">
-            View impact dashboard
-          </Link>
-        </div>
-      )}
-
-      {matches.map((match) => {
-        const id = match.recipient.id;
-        return (
-          <MatchCard
-            key={id}
-            match={match}
-            expanded={openId === id}
-            chosen={chosenId === id}
-            onToggle={() => setOpenId(openId === id ? null : id)}
-            onChoose={() => {
-              // TODO: POST /api/claims when the backend route is ready
-              setChosenId(id);
-            }}
-          />
-        );
-      })}
-
-      <p className="text-sm text-muted">Sample organizations and contact details for the demo only.</p>
-    </div>
-  );
+  if (matches.length === 0) return <p className="rounded-2xl border border-line bg-surface p-6">No recipients match this listing’s tier and category right now.</p>;
+  return <div className="flex flex-col gap-4">
+    <p className="text-muted">Contact a suggested recipient to coordinate. Recipients reserve food from their own account; viewing these suggestions does not create a reservation. Pickup availability is checked when they claim.</p>
+    {matches.map((match) => <MatchCard key={match.recipient.id} match={match}
+      expanded={openId === match.recipient.id}
+      onToggle={() => setOpenId(openId === match.recipient.id ? null : match.recipient.id)} />)}
+  </div>;
 }

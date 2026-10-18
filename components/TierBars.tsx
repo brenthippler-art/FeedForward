@@ -29,7 +29,7 @@ export default function TierBars({ lbsByTier }: { lbsByTier: Record<Tier, number
           );
         })}
       </div>
-      <figcaption className="text-sm text-muted">Pounds diverted this month</figcaption>
+      <figcaption className="text-sm text-muted">Pounds from completed pickups</figcaption>
     </figure>
   );
 }

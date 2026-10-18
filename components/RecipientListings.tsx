@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { Claim } from '@/types';
+import type { Claim, Pickup } from '@/types';
 import type { BookableListing } from '@/lib/bookable-listings';
 import type { RecipientListing } from '@/lib/listings';
 import type { RecipientReservation } from '@/lib/recipient-claims';
 import { formatPickupDateTime } from '@/lib/format';
 import AvailableCard from './AvailableCard';
 import PickupCard from './PickupCard';
+import Link from 'next/link';
 
 type Resource<T> = { data: T[]; loading: boolean; error: string | null };
 const initial = { data: [], loading: true, error: null };
@@ -24,6 +25,7 @@ export default function RecipientListings() {
   const [attempt, setAttempt] = useState(0);
   const [listings, setListings] = useState<Resource<BookableListing>>(initial);
   const [pickups, setPickups] = useState<Resource<RecipientReservation>>(initial);
+  const [savingPickupId, setSavingPickupId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const bookingInFlight = useRef(false);
   const [message, setMessage] = useState('');
@@ -88,8 +90,41 @@ export default function RecipientListings() {
     }
   }
 
+  async function handlePickedUp(claimId: number, actualLbs: number) {
+    if (bookingInFlight.current) return;
+    bookingInFlight.current = true;
+    setSavingPickupId(claimId);
+    setBookingError('');
+    setMessage('');
+    let status: number | null = null;
+    try {
+      const response = await fetch('/api/pickups', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId, actualLbs }),
+      });
+      status = response.status;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Pickup could not be confirmed.');
+      const pickup = result as Pickup;
+      if (!Number.isSafeInteger(pickup.id) || pickup.claimId !== claimId || pickup.actualLbs !== actualLbs
+        || typeof pickup.pickedUpAt !== 'string') throw new Error('Unexpected pickup response.');
+      setPickups((current) => ({ ...current, data: current.data.map((saved) => saved.claimId === claimId
+        ? { ...saved, status: 'picked_up', actualLbs: pickup.actualLbs } : saved) }));
+      setMessage(`Pickup recorded: ${pickup.actualLbs} lbs. View the impact dashboard for updated totals.`);
+    } catch (error) {
+      const uncertain = status === null || status >= 500 || (status >= 200 && status < 300);
+      setBookingError(uncertain ? 'Pickup confirmation is uncertain. Review your refreshed pickups before trying again.'
+        : error instanceof Error ? error.message : 'Pickup could not be confirmed.');
+    } finally {
+      bookingInFlight.current = false;
+      setSavingPickupId(null);
+      // Reconcile even after a lost response: never automatically repeat a write.
+      reload();
+    }
+  }
+
   const loading = listings.loading || pickups.loading;
-  const blocked = savingId !== null || loading || Boolean(listings.error || pickups.error);
+  const blocked = savingId !== null || savingPickupId !== null || loading || Boolean(listings.error || pickups.error);
   const savedListingIds = new Set(pickups.data.map((pickup) => pickup.listing.id));
   const available = listings.data.filter((listing) => !savedListingIds.has(listing.id));
 
@@ -97,13 +132,14 @@ export default function RecipientListings() {
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted">Pickup times are shown in Central time.</p>
-        <button type="button" onClick={reload} disabled={loading || savingId !== null}
+        <button type="button" onClick={reload} disabled={loading || savingId !== null || savingPickupId !== null}
           className="min-h-11 rounded-lg border border-brand px-4 font-bold text-brand disabled:opacity-50">
           {listings.error || pickups.error ? 'Try again' : 'Refresh'}
         </button>
       </div>
       {message && <p role="status" className="rounded-xl border border-brand bg-verified-tint p-4 font-semibold text-brand-dark">{message}</p>}
       {bookingError && <p role="alert" className="rounded-xl border border-warn-line bg-warn-tint p-4 text-warn-text">{bookingError}</p>}
+      <Link href="/dashboard" className="inline-block font-semibold text-brand underline">View impact dashboard</Link>
       <div className="flex flex-wrap items-start gap-6">
         <section aria-labelledby="available-heading" className="flex min-w-0 flex-[3_1_520px] flex-col gap-4" aria-busy={listings.loading}>
           <h2 id="available-heading" className="font-display text-2xl font-semibold">Available food</h2>
@@ -128,7 +164,8 @@ export default function RecipientListings() {
             <p className="rounded-xl border border-line bg-surface p-6">Food you reserve will appear here, including when you return later.</p>
           )}
           <ul className="flex flex-col gap-4">
-            {pickups.data.map((pickup) => <li key={pickup.claimId}><PickupCard pickup={pickup} /></li>)}
+            {pickups.data.map((pickup) => <li key={pickup.claimId}><PickupCard pickup={pickup} saving={savingPickupId === pickup.claimId} disabled={blocked}
+              onPickedUp={(id, lbs) => { void handlePickedUp(id, lbs); }} /></li>)}
           </ul>
         </section>
       </div>

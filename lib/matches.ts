@@ -45,7 +45,10 @@ const MAX_MATCHES = 3;
 
 export async function getListingMatches(listingId: number, donorOrgId: number): Promise<MatchResult[]> {
   const [items] = await pool.execute<ItemRow[]>(
-    'SELECT item_id, donor_id, category_id, tier FROM Item WHERE item_id = ?',
+    `SELECT item_id, donor_id, category_id, tier FROM Item
+     WHERE item_id = ? AND quantity > 0
+       AND (safe_until IS NULL OR safe_until > UTC_TIMESTAMP())
+       AND NOT EXISTS (SELECT 1 FROM Claim WHERE Claim.item_id = Item.item_id)`,
     [listingId],
   );
   const item = items[0];
