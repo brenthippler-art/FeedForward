@@ -5,6 +5,12 @@ Built for HackTN26, Challenge #1: *From Surplus to Social Good.*
 
 **Live demo:** http://163.192.109.118
 
+## Product video
+
+[![Watch the FeedForward product video](brag-output/brag.jpg)](brag-output/LeftoverLegends.mp4)
+
+[Watch LeftoverLegends.mp4](brag-output/LeftoverLegends.mp4) — a 24-second narrated walkthrough of posting surplus food and reserving a pickup.
+
 ## The problem
 Restaurants, campus dining halls and hospital kitchens throw out usable food because nothing connects what's available tonight to who could use it. Pantries and shelters can't see the surplus, and farms that would take scraps for animal feed never hear about it. The handoff (what's safe, who takes it, when it's picked up) happens by phone, if at all.
 
