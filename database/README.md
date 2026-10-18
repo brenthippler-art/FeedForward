@@ -19,11 +19,11 @@ The uppercase duplicate tables are not used by this integration.
 
 ## API
 
-`GET /api/listings` returns a JSON array for the signed-in recipient.
+`GET /api/listings` returns a JSON array for the signed-in recipient, or the
+signed-in donor’s own posted items (see donor posting below).
 `?tier=1`, `?tier=2`, or `?tier=3` optionally narrows the results.
 An optional `recipientId` must match the signed-in identity; it cannot override it.
-Responses are not cached. Signed-out requests return 401; donors or requests for
-another recipient return 403; invalid tiers return 400; database failures return 503.
+Responses are not cached. Signed-out requests return 401; requests for another recipient return 403; invalid tiers return 400; database failures return 503.
 
 The query returns at most 100 positive-quantity items with a name, unit, ready
 time, an accepted tier, and a category the recipient has not refused. Expired
@@ -203,3 +203,88 @@ reload the page and confirm the same claim persists. A second recipient must not
 see that reservation. Test a conflict with another booking and a read failure.
 Browser checks during development can mock the API to test these cases without
 creating live reservations. Database SELECT verification can be performed separately.
+
+
+## Donor posting
+
+`POST /api/listings` accepts a reviewed batch of 1–20 items from a signed-in donor:
+
+```json
+{
+  "confirmed": true,
+  "listings": [{
+    "item": "Fresh carrots",
+    "quantity": 2,
+    "unit": "boxes",
+    "unitWeight": 5.25,
+    "condition": "Chilled, whole",
+    "category": "produce",
+    "containsMeat": false,
+    "hoursOut": null,
+    "tier": 1,
+    "readyAt": "2026-10-19T14:00:00Z",
+    "safeUntil": "2026-10-19T20:00:00Z"
+  }]
+}
+```
+
+Use actual availability, not the example dates. Timestamps are UTC with whole
+seconds. The website accepts device-local datetime inputs and converts them to
+UTC; it does not assume the browser is in Central time. Ready time may be in the
+past for food already available. A supplied deadline must be later than both the
+ready time and the current database clock. Tier 1 requires a deadline; no expiry
+is invented for other tiers. The server revalidates using its database clock
+after locking the donor record.
+
+Quantity must be a positive whole number because Item.quantity is INT. unitWeight
+is pounds per unit, positive with at most two decimal places. Both per-unit and
+generated total weight must fit DECIMAL(8,2), up to 999999.99 lbs. The database
+computes total_weight; clients cannot supply it. The response's estimatedLbs is
+read back from that generated column. For fractional bulk quantities, use one
+container/lot with its measured per-container weight rather than fractional counts.
+
+Required fields include the food name, unit, known condition, category, meat
+content, tier and ready time. Categories must be one of produce/dairy/meat/bakery/
+cooked/other and must already exist in Category. A missing category fails the
+whole batch; this endpoint does not create category records. Cooked food requires
+hoursOut. Tier 2 rejects meat-containing/contact items. Cooked food reported out
+for more than two hours is rejected for tier 1. These are rejection checks, not
+food-safety certification or a complete tier classifier; shorter exposure limits
+can apply in hot conditions. See [USDA leftovers guidance](https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/leftovers-and-food-safety)
+and the existing donation safety panel. The donor must choose an appropriate
+route and availability. Shared tier-rule/AI integration remains a separate task.
+
+The donor ID comes from the session. An optional numeric donorId must match it.
+The server verifies Donor membership, locks category records, inserts the batch,
+reads the stored values, and commits in one transaction. Validation or insert
+failures roll back the entire batch. Item IDs, donor ownership, generated total
+weight and tierReason are server-owned; the reason is recorded as donor-confirmed,
+not presented as an AI safety determination.
+
+Success returns HTTP 201 with the saved-item array. Invalid or unconfirmed data
+returns 400 with `{ error, fields }`; fields use keys like
+`listings.0.unitWeight` or `confirmed`. Authentication failures return 401/403;
+unexpected DB failures return 503 without SQL details. There is no idempotency
+key yet. The UI disables double submission and never automatically retries a
+POST. After an uncertain outcome it refreshes posted food and locks the old form
+until the donor reviews history and explicitly starts a new post.
+
+`GET /api/listings` for donors returns only their own last 100 items, newest first,
+including availability, remaining quantity/weight, and status derived from Claim
+and Pickup. Optional tier filtering still applies. Recipient behavior remains
+unchanged apart from the already added booking options; a donor cannot use
+recipientId to inspect recipient-specific listings.
+
+The donor form supports manual entry and clearly labeled editable sample items.
+It saves real confirmed items and shows Your posted food, including after refresh.
+It does not call an AI extraction service or redirect to the still-mocked matches
+page. No schema migration is required. Existing demo sign-in is not production
+authentication. Do not run db/seed.ts to verify posting: it deletes existing rows.
+
+Verification: deploy the code, sign in as a donor, add food with a known condition
+and actual future pickup deadline, confirm and post. Verify its stored ID and
+weight in Your posted food, reload, then sign in as a recipient whose rules accept
+it and refresh Available food. Check read/write error states without automatically
+retrying submissions. Local regression command: `node --test tests/*.test.mjs`.
+Browser tests can mock persistence; live insertion and subsequent claim/pickup
+verification should use designated test records with the schema owner.

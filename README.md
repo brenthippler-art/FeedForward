@@ -46,8 +46,8 @@ The database sits on a private subnet and is reachable only from the web server.
 | Endpoint | Receives | Returns |
 | --- | --- | --- |
 | `POST /api/extract` | `{ text, passcode }` | `DraftListing[]` (not saved) |
-| `POST /api/listings` | Confirmed `DraftListing[]` + `donorId` | Saved `Listing[]` |
-| `GET /api/listings` | Optional `?tier=` | Available `Listing[]` |
+| `POST /api/listings` | `{ confirmed: true, listings: [...] }` with per-unit weight and UTC availability; donor from session | Saved listings |
+| `GET /api/listings` | Optional `?tier=` | Available food for recipients; own posted food for donors |
 | `GET /api/matches?listingId=` | `listingId` | Up to 3 `RecipientMatch` |
 | `POST /api/claims` | `{ listingId, recipientId, pickupTime }` | `Claim` |
 | `POST /api/pickups` | `{ claimId, actualLbs }` | `Pickup` |
