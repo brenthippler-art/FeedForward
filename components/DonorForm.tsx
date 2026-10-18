@@ -25,8 +25,8 @@ function utcValue(value: string) {
   // Reject a nonexistent local time during the spring DST transition.
   return Number.isFinite(date.getTime()) && localDateValue(date) === value ? date.toISOString() : value;
 }
-function emptyItem(): EditableItem {
-  return { key: crypto.randomUUID(), item: '', quantity: '1', unit: 'lbs', unitWeight: '',
+function emptyItem(key: string): EditableItem {
+  return { key, item: '', quantity: '1', unit: 'lbs', unitWeight: '',
     condition: '', category: 'produce', containsMeat: false, hoursOut: '', tier: 1,
     readyAt: localDateValue(new Date()), safeUntil: '' };
 }
@@ -44,6 +44,7 @@ export default function DonorForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
+  const nextItemKey = useRef(0);
   const [uncertain, setUncertain] = useState(false);
   const [message, setMessage] = useState('');
   const [postError, setPostError] = useState('');
@@ -76,8 +77,19 @@ export default function DonorForm() {
     setConfirmed(false);
     setErrors({});
   }
+  // Draft keys are local UI identities, not database IDs or security tokens.
+  function createItem() {
+    nextItemKey.current += 1;
+    return emptyItem(String(nextItemKey.current));
+  }
+  function addItem() {
+    const draft = createItem();
+    setDrafts((current) => [...current, draft]);
+    setConfirmed(false);
+    setMessage('');
+  }
   function loadSamples() {
-    setDrafts(mockDrafts.map((draft) => ({ ...emptyItem(), item: draft.item, quantity: String(draft.quantity),
+    setDrafts(mockDrafts.map((draft) => ({ ...createItem(), item: draft.item, quantity: String(draft.quantity),
       unit: draft.unit, unitWeight: draft.estimatedLbs === null ? '' : (draft.estimatedLbs / draft.quantity).toFixed(2),
       condition: draft.condition, category: draft.category, containsMeat: draft.containsMeat,
       hoursOut: draft.hoursOut === null ? '' : String(draft.hoursOut), tier: draft.tier })));
@@ -135,7 +147,7 @@ export default function DonorForm() {
         <legend className="mb-3 font-display text-xl font-semibold">Add surplus food</legend>
         <p className="text-muted">Enter each item and review its destination and pickup availability before posting. Times use your device’s local time.</p>
         <div className="flex flex-wrap gap-3">
-          <button type="button" disabled={drafts.length >= 20} onClick={() => { setDrafts((current) => [...current, emptyItem()]); setConfirmed(false); setMessage(''); }}
+          <button type="button" disabled={drafts.length >= 20} onClick={addItem}
             className="min-h-12 rounded-lg bg-brand px-5 font-bold text-white disabled:opacity-50">Add food item</button>
           {drafts.length === 0 && <button type="button" onClick={loadSamples} className="min-h-12 rounded-lg border border-brand px-5 font-bold text-brand">Use sample items</button>}
         </div>
