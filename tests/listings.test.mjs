@@ -57,11 +57,35 @@ test('listing reads bind recipient and optional tier parameters', async () => {
   assert.match(calls[0].sql, /UTC_TIMESTAMP\(\)/);
 });
 
+// Loaded once and reused everywhere: each loadModule() call creates a fresh vm
+// sandbox, so a ListingError thrown from a separately-loaded instance would fail
+// `instanceof` checks against the route module's own internally-loaded class.
+const listingPolicy = loadModule('../lib/listing-policy.ts', {});
+
 function route(user, read = async () => []) {
   return loadModule('../app/api/listings/route.ts', {
     '@/lib/session': { getCurrentUser: async () => user },
     '@/lib/listings': { getRecipientListings: read },
+    '@/lib/create-listing': { createListings: async () => { throw new Error('Must not write'); } },
+    '@/lib/listing-policy': listingPolicy,
   }).GET;
+}
+
+function postRoute(user, write = async () => []) {
+  return loadModule('../app/api/listings/route.ts', {
+    '@/lib/session': { getCurrentUser: async () => user },
+    '@/lib/listings': { getRecipientListings: async () => { throw new Error('Must not read'); } },
+    '@/lib/create-listing': { createListings: write },
+    '@/lib/listing-policy': listingPolicy,
+  }).POST;
+}
+
+function postRequest(body) {
+  return { json: async () => body };
+}
+
+function invalidJsonRequest() {
+  return { json: async () => { throw new SyntaxError('Unexpected token'); } };
 }
 
 for (const [name, user, query, status] of [
@@ -88,6 +112,51 @@ test('listings API returns an array and passes session identity to the read', as
 
 test('database errors return 503 rather than empty or mock listings', async () => {
   const response = await route({ role: 'recipient', orgId: 11 }, async () => { throw new Error('private SQL details'); })({ url: 'http://localhost/api/listings' });
+  assert.equal(response.status, 503);
+  assert.doesNotMatch(JSON.stringify(await response.json()), /private SQL/);
+});
+
+const sampleDraft = { item: 'Carrots', quantity: 1, unit: 'box', estimatedLbs: 1, category: 'produce', containsMeat: false };
+
+for (const [name, user, status] of [
+  ['signed out', null, 401],
+  ['recipient role', { role: 'recipient', orgId: 11 }, 403],
+]) {
+  test(`listings POST rejects ${name} before reading the database`, async () => {
+    const response = await postRoute(user, () => { throw new Error('Must not write'); })(postRequest({ listings: [sampleDraft] }));
+    assert.equal(response.status, status);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  });
+}
+
+test('listings POST rejects an invalid JSON body', async () => {
+  const response = await postRoute({ role: 'donor', orgId: 1 }, () => { throw new Error('Must not write'); })(invalidJsonRequest());
+  assert.equal(response.status, 400);
+});
+
+test('listings POST maps a ListingError to its status', async () => {
+  const response = await postRoute({ role: 'donor', orgId: 1 }, () => { throw new listingPolicy.ListingError(409, 'nope'); })(
+    postRequest({ listings: [sampleDraft] }),
+  );
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).error, 'nope');
+});
+
+test('listings POST returns 201 and the saved listings on success', async () => {
+  const saved = [{ id: 1 }];
+  const response = await postRoute({ role: 'donor', orgId: 1 }, async (donorId, drafts) => {
+    assert.equal(donorId, 1);
+    assert.equal(drafts.length, 1);
+    return saved;
+  })(postRequest({ listings: [sampleDraft] }));
+  assert.equal(response.status, 201);
+  assert.deepEqual(await response.json(), saved);
+});
+
+test('listings POST database errors return 503 without leaking details', async () => {
+  const response = await postRoute({ role: 'donor', orgId: 1 }, async () => { throw new Error('private SQL details'); })(
+    postRequest({ listings: [sampleDraft] }),
+  );
   assert.equal(response.status, 503);
   assert.doesNotMatch(JSON.stringify(await response.json()), /private SQL/);
 });

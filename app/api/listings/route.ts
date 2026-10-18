@@ -1,5 +1,7 @@
 import { getCurrentUser } from '@/lib/session';
 import { getRecipientListings } from '@/lib/listings';
+import { createListings } from '@/lib/create-listing';
+import { ListingError, parseListingsInput } from '@/lib/listing-policy';
 
 export async function GET(request: Request) {
   const headers = { 'Cache-Control': 'no-store' };
@@ -24,5 +26,28 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Unable to load recipient listings:', error);
     return Response.json({ error: 'Available food could not be loaded. Please try again shortly.' }, { status: 503, headers });
+  }
+}
+
+export async function POST(request: Request) {
+  const headers = { 'Cache-Control': 'no-store' };
+  const user = await getCurrentUser();
+  if (!user) return Response.json({ error: 'Sign in to list surplus food.' }, { status: 401, headers });
+  if (user.role !== 'donor') return Response.json({ error: 'Only donors can create listings.' }, { status: 403, headers });
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: 'Provide a valid JSON request body.' }, { status: 400, headers });
+  }
+  try {
+    const drafts = parseListingsInput(body, user.orgId);
+    const listings = await createListings(user.orgId, drafts);
+    return Response.json(listings, { status: 201, headers });
+  } catch (error) {
+    if (error instanceof ListingError) return Response.json({ error: error.message }, { status: error.status, headers });
+    console.error('Unable to create listings:', error);
+    return Response.json({ error: 'The listing could not be saved. Please try again shortly.' }, { status: 503, headers });
   }
 }
