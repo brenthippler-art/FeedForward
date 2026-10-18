@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  useSyncExternalStore,
-  type FocusEvent,
-} from "react";
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import PullQuote from "@/components/PullQuote";
 import type { PullQuoteData } from "@/lib/impact-stats";
 
@@ -28,7 +23,6 @@ const getServerMotionSnapshot = () => false;
 
 export default function QuoteRotator({ quotes }: QuoteRotatorProps) {
   const [index, setIndex] = useState(0);
-  const [hovering, setHovering] = useState(false);
 
   const reducedMotion = useSyncExternalStore(
     subscribeToMotion,
@@ -38,31 +32,26 @@ export default function QuoteRotator({ quotes }: QuoteRotatorProps) {
   const [userPaused, setUserPaused] = useState<boolean | null>(null);
   const paused = userPaused ?? reducedMotion;
 
-  const stopped = paused || hovering;
-
-  useEffect(() => {
-    if (stopped || quotes.length < 2) return;
+    useEffect(() => {
+    if (paused || quotes.length < 2) return;
     const id = window.setInterval(() => {
       setIndex((current) => (current + 1) % quotes.length);
     }, ROTATE_MS);
     return () => window.clearInterval(id);
-  }, [stopped, quotes.length]);
-
-  function handleBlur(event: FocusEvent<HTMLElement>) {
-    // Only resume when focus leaves the whole rotator, not when it moves between its buttons
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setHovering(false);
-    }
-  }
+  }, [paused, quotes.length]);
 
   return (
     <section
       aria-label="What chefs say about food waste"
       className="flex flex-col gap-4"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onFocus={() => setHovering(true)}
-      onBlur={handleBlur}
+      onFocus={(event) => {
+        const enteringFromOutside = !event.currentTarget.contains(
+          event.relatedTarget as Node | null,
+        );
+        if (enteringFromOutside && event.target.matches(":focus-visible")) {
+          setUserPaused(true);
+        }
+      }}
     >
       <div className="grid">
         {quotes.map((quote, i) => (
