@@ -1,33 +1,16 @@
 import Image from "next/image";
-import type { Tier } from "@/types";
 import { demoUsers } from "@/lib/demo-users";
 import { signIn } from "@/app/actions/session";
 import { Suspense } from "react";
 import SignInScroller from "@/components/SignInScroller";
 import SignInLink from "@/components/SignInLink";
-import TierBadge from "@/components/TierBadge";
+import WhyItMatters from "@/components/WhyItMatters";
+import Membership from "@/components/Membership";
+import BestUse from "@/components/BestUse";
 
 export const metadata = {
   title: { absolute: "FeedForward: Route surplus food to its best use" },
 };
-
-const tiers: { tier: Tier; title: string; body: string }[] = [
-  {
-    tier: 1,
-    title: "People first",
-    body: "Safe, edible surplus goes to food pantries, shelters and meal programs.",
-  },
-  {
-    tier: 2,
-    title: "Then farms",
-    body: "Plant-based scraps that never touched meat become feed for local livestock.",
-  },
-  {
-    tier: 3,
-    title: "Then compost",
-    body: "Whatever is left goes to compost instead of the landfill.",
-  },
-];
 
 const steps = [
   {
@@ -122,33 +105,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tiers */}
+      {/* Why it matters */}
+      <WhyItMatters />
+
+      {/* How it works */}
       <section
-        aria-labelledby="tiers-heading"
-        className="border-y border-line bg-surface"
+        aria-labelledby="how-heading"
+        className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 py-14"
       >
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 py-14">
-          <h2 id="tiers-heading" className="font-display text-[28px] font-bold">
-            Every pound goes to the best use it&apos;s still good for
-          </h2>
-          <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {tiers.map((t) => (
-              <li
-                key={t.tier}
-                className="flex flex-col gap-3 rounded-2xl border border-line p-6"
+        <h2 id="how-heading" className="font-display text-[28px] font-bold">
+          How it works
+        </h2>
+        <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((step, index) => (
+            <li key={step.title} className="flex flex-col gap-2">
+              <span
+                aria-hidden="true"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-brand font-bold text-white"
               >
-                <div>
-                  <TierBadge tier={t.tier} />
-                </div>
-                <h3 className="font-display text-xl font-semibold">
-                  {t.title}
-                </h3>
-                <p className="text-muted">{t.body}</p>
-              </li>
-            ))}
-          </ol>
+                {index + 1}
+              </span>
+              <h3 className="font-display text-xl font-semibold">
+                {step.title}
+              </h3>
+              <p className="text-muted">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Trust */}
+      <section aria-labelledby="trust-heading" className="bg-brand text-white">
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-6 py-14">
+          <h2
+            id="trust-heading"
+            className="font-display text-[28px] font-bold sm:text-[34px]"
+          >
+            The AI drafts. Your rules decide. A person confirms.
+          </h2>
+          <p className="max-w-2xl text-lg leading-relaxed text-white/90">
+            FeedForward never guesses whether food is safe. Unknown conditions
+            get flagged, each recipient&apos;s own acceptance rules decide every
+            match, and the donor confirms before anything is posted.
+          </p>
         </div>
       </section>
+
+     <BestUse />
+
+      {/* Membership */}
+      <Membership />
 
       {/* Demo sign-in */}
       <section
@@ -203,50 +209,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* How it works */}
-      <section
-        aria-labelledby="how-heading"
-        className="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 py-14"
-      >
-        <h2 id="how-heading" className="font-display text-[28px] font-bold">
-          How it works
-        </h2>
-        <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((step, index) => (
-            <li key={step.title} className="flex flex-col gap-2">
-              <span
-                aria-hidden="true"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-brand font-bold text-white"
-              >
-                {index + 1}
-              </span>
-              <h3 className="font-display text-xl font-semibold">
-                {step.title}
-              </h3>
-              <p className="text-muted">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Trust */}
-      <section aria-labelledby="trust-heading" className="bg-brand text-white">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-6 py-14">
-          <h2
-            id="trust-heading"
-            className="font-display text-[28px] font-bold sm:text-[34px]"
-          >
-            The AI drafts. Your rules decide. A person confirms.
-          </h2>
-          <p className="max-w-2xl text-lg leading-relaxed text-white/90">
-            FeedForward never guesses whether food is safe. Unknown conditions
-            get flagged, each recipient&apos;s own acceptance rules decide every
-            match, and the donor confirms before anything is posted.
-          </p>
-        </div>
-      </section>
-
     </main>
   );
 }
