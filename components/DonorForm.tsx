@@ -694,6 +694,48 @@ export default function DonorForm() {
                     ? "Reserved"
                     : "Posted"}
               </p>
+                            {listing.status !== "available" && listing.claimedBy && (
+                <div className="flex flex-col gap-1 rounded-lg bg-ground p-3 text-sm">
+                  <p>
+                    <span className="text-muted">
+                      {listing.status === "picked_up" ? "Picked up by" : "Reserved by"}
+                    </span>{" "}
+                    <span className="font-semibold">{listing.claimedBy.name}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted">Pickup:</span>{" "}
+                    {formatPickupDateTime(listing.claimedBy.pickupTime)}
+                  </p>
+                  <details>
+                    <summary className="cursor-pointer py-2 font-semibold text-brand underline">
+                      Contact details
+                      <span className="sr-only"> for {listing.claimedBy.name}</span>
+                    </summary>
+                    <dl className="flex flex-col gap-1">
+                      <div>
+                        <dt className="inline text-muted">Contact: </dt>
+                        <dd className="inline">{listing.claimedBy.contactName}</dd>
+                      </div>
+                      <div>
+                        <dt className="inline text-muted">Phone: </dt>
+                        <dd className="inline">
+                          <a href={`tel:${listing.claimedBy.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-brand underline">
+                            {listing.claimedBy.phone}
+                          </a>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="inline text-muted">Email: </dt>
+                        <dd className="inline">
+                          <a href={`mailto:${listing.claimedBy.email}`} className="font-semibold text-brand underline">
+                            {listing.claimedBy.email}
+                          </a>
+                        </dd>
+                      </div>
+                    </dl>
+                  </details>
+                </div>
+              )}
               <p className="text-sm text-muted">
                 Listing #{listing.id}
                 {listing.readyAt
