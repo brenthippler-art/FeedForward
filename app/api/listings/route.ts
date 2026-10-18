@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/lib/session';
-import { getRecipientListings } from '@/lib/listings';
+import { getBookableListings } from '@/lib/bookable-listings';
 
 export async function GET(request: Request) {
   const headers = { 'Cache-Control': 'no-store' };
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const listings = await getRecipientListings(user.orgId, rawTier === null ? undefined : Number(rawTier));
+    const listings = await getBookableListings(user.orgId, rawTier === null ? undefined : Number(rawTier));
     return Response.json(listings, { headers });
   } catch (error) {
     console.error('Unable to load recipient listings:', error);

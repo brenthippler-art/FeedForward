@@ -138,6 +138,7 @@ function route(user, create = async () => ({ id: 42 })) {
   return load('../app/api/claims/route.ts', {
     '@/lib/session': { getCurrentUser: async () => user },
     '@/lib/claims': { createClaim: create }, '@/lib/claim-policy': policy,
+    '@/lib/recipient-claims': { getRecipientClaims: async () => [] },
   }).POST;
 }
 for (const [label, user, status] of [['signed out', null, 401], ['donor', { role: 'donor', orgId: 1 }, 403]]) {

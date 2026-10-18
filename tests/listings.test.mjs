@@ -60,7 +60,7 @@ test('listing reads bind recipient and optional tier parameters', async () => {
 function route(user, read = async () => []) {
   return loadModule('../app/api/listings/route.ts', {
     '@/lib/session': { getCurrentUser: async () => user },
-    '@/lib/listings': { getRecipientListings: read },
+    '@/lib/bookable-listings': { getBookableListings: read },
   }).GET;
 }
 
