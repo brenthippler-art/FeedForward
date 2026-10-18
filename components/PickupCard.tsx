@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { RecipientReservation } from "@/lib/recipient-claims";
+import RatingPreview from "./RatingPreview";
 import TierBadge from "./TierBadge";
 import { formatPickupDateTime } from "@/lib/format";
 
@@ -64,12 +65,15 @@ export default function PickupCard({
       </p>
 
       {pickup.status === "picked_up" ? (
-        <p className="font-semibold text-brand-dark">
-          <span aria-hidden="true">✓ </span>Picked up
-          {pickup.actualLbs !== null
-            ? ` · ${pickup.actualLbs} lbs`
-            : " · Weight not recorded"}
-        </p>
+        <>
+          <p className="font-semibold text-brand-dark">
+            <span aria-hidden="true">✓ </span>Picked up
+            {pickup.actualLbs !== null
+              ? ` · ${pickup.actualLbs} lbs`
+              : " · Weight not recorded"}
+          </p>
+          <RatingPreview name={listing.donorName} />
+        </>
       ) : !onPickedUp ? (
         <p className="font-semibold text-brand-dark">
           Reserved · Pickup confirmation will be available soon.
