@@ -16,9 +16,9 @@ export default function TierBars({ lbsByTier }: { lbsByTier: Record<Tier, number
         {tiers.map((t) => {
           const lbs = lbsByTier[t.tier];
           return (
-            <div key={t.tier} className="grid grid-cols-[150px_minmax(0,1fr)_64px] items-center gap-3">
+            <div key={t.tier} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 sm:grid-cols-[150px_minmax(0,1fr)_64px]">
               <span className="text-[15px] font-bold">{t.label}</span>
-              <div className="h-5 rounded-r bg-ground">
+              <div className="col-span-2 row-start-2 h-5 rounded-r bg-ground sm:col-span-1 sm:row-start-auto">
                 <div
                   className={`h-5 rounded-r ${t.barClass}`}
                   style={{ width: `${(lbs / max) * 100}%` }}
