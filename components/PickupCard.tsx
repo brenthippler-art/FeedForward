@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useId, useRef, useState } from 'react';
-import type { RecipientReservation } from '@/lib/recipient-claims';
-import TierBadge from './TierBadge';
-import { formatPickupDateTime } from '@/lib/format';
+import { useEffect, useId, useRef, useState } from "react";
+import type { RecipientReservation } from "@/lib/recipient-claims";
+import TierBadge from "./TierBadge";
+import { formatPickupDateTime } from "@/lib/format";
 
 type PickupCardProps = {
   pickup: RecipientReservation;
@@ -12,20 +12,40 @@ type PickupCardProps = {
   onPickedUp?: (claimId: number, actualLbs: number) => void;
 };
 
-export default function PickupCard({ pickup, onPickedUp, saving = false, disabled = false }: PickupCardProps) {
+export default function PickupCard({
+  pickup,
+  onPickedUp,
+  saving = false,
+  disabled = false,
+}: PickupCardProps) {
   const { listing } = pickup;
   const [logging, setLogging] = useState(false);
-  const [lbs, setLbs] = useState(listing.estimatedLbs?.toString() ?? '');
+  const [lbs, setLbs] = useState(listing.estimatedLbs?.toString() ?? "");
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const weight = Number(lbs);
-  const valid = lbs !== '' && Number.isFinite(weight) && weight >= 0.001 && weight <= 9999999.999
-    && Math.abs(weight * 1000 - Math.round(weight * 1000)) <= 0.000001;
+  const valid =
+    lbs !== "" &&
+    Number.isFinite(weight) &&
+    weight >= 0.001 &&
+    weight <= 9999999.999 &&
+    Math.abs(weight * 1000 - Math.round(weight * 1000)) <= 0.000001;
 
   useEffect(() => {
     if (logging) inputRef.current?.focus();
   }, [logging]);
+
+  // The server rejects a pickup before its reserved time, so wait for it here too.
+  const opensAt = Date.parse(pickup.pickupTime);
+  const [isOpen, setIsOpen] = useState(() => Date.now() >= opensAt);
+
+  useEffect(() => {
+    if (isOpen) return;
+    // Browsers cap timers near 24.8 days; reservations are within 7 days.
+    const id = window.setTimeout(() => setIsOpen(true), opensAt - Date.now());
+    return () => window.clearTimeout(id);
+  }, [isOpen, opensAt]);
 
   return (
     <article className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
@@ -39,17 +59,27 @@ export default function PickupCard({ pickup, onPickedUp, saving = false, disable
         <TierBadge tier={listing.tier} />
       </div>
 
-      <p className="text-sm text-muted">{listing.quantity} {listing.unit}</p>
+      <p className="text-sm text-muted">
+        {listing.quantity} {listing.unit}
+      </p>
 
-      {pickup.status === 'picked_up' ? (
-        <p className="font-semibold text-brand-dark">✓ Picked up{pickup.actualLbs !== null ? ` · ${pickup.actualLbs} lbs` : ' · Weight not recorded'}</p>
+      {pickup.status === "picked_up" ? (
+        <p className="font-semibold text-brand-dark">
+          ✓ Picked up
+          {pickup.actualLbs !== null
+            ? ` · ${pickup.actualLbs} lbs`
+            : " · Weight not recorded"}
+        </p>
       ) : !onPickedUp ? (
-        <p className="font-semibold text-brand-dark">Reserved · Pickup confirmation will be available soon.</p>
+        <p className="font-semibold text-brand-dark">
+          Reserved · Pickup confirmation will be available soon.
+        </p>
       ) : logging ? (
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (valid && !disabled && !saving) onPickedUp(pickup.claimId, weight);
+            if (valid && !disabled && !saving)
+              onPickedUp(pickup.claimId, weight);
           }}
           className="flex flex-wrap items-end gap-3"
         >
@@ -77,7 +107,7 @@ export default function PickupCard({ pickup, onPickedUp, saving = false, disable
             disabled={!valid || disabled || saving}
             className="min-h-12 rounded-[10px] bg-brand px-5 font-bold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {saving ? 'Saving pickup…' : 'Confirm pickup'}
+            {saving ? "Saving pickup…" : "Confirm pickup"}
           </button>
           <button
             type="button"
@@ -88,6 +118,11 @@ export default function PickupCard({ pickup, onPickedUp, saving = false, disable
             Cancel
           </button>
         </form>
+      ) : !isOpen ? (
+        <p className="text-sm font-semibold text-muted">
+          Reserved · Confirm pickup from{" "}
+          {formatPickupDateTime(pickup.pickupTime)}
+        </p>
       ) : (
         <button
           type="button"
