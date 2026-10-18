@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, foreignKey, primaryKey, unique, check, int, varchar, time, tinyint, index, datetime, decimal, char } from "drizzle-orm/mysql-core"
+import { mysqlTable, primaryKey, unique, check, int, varchar, time, tinyint, index, datetime, decimal, char } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const acceptanceRule = mysqlTable("AcceptanceRule", {
