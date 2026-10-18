@@ -18,11 +18,22 @@ export type TierAssignment = { tier: Tier; tierReason: string };
 const COOKED_SAFE_HOURS = 2;
 
 const SPOILAGE_KEYWORDS = ['spoiled', 'moldy', 'mold', 'rotten', 'rancid', 'sour', 'rotting'];
-const INEDIBLE_TRIM_KEYWORDS = ['peel', 'peels', 'scrap', 'scraps', 'trim', 'rind', 'core', 'skin'];
+const INEDIBLE_TRIM_KEYWORDS = [
+  'peel', 'peels', 'scrap', 'scraps', 'trim', 'trims', 'rind', 'rinds', 'core', 'cores', 'skin', 'skins',
+];
+
+// Phrases where a keyword above is part of a normal food name or description,
+// not a report of spoilage or trim — "sour cream" isn't spoiled, "skin on"
+// means the skin is still attached (edible), not trimmed off. Stripped out
+// before keyword matching so they can't cause a false positive.
+const SAFE_PHRASES = ['sour cream', 'sour patch', 'skin on', 'skin-on', 'skins on', 'skins-on'];
 
 function matchesAny(text: string, keywords: string[]): boolean {
-  const lower = text.toLowerCase();
-  return keywords.some((keyword) => lower.includes(keyword));
+  const lower = SAFE_PHRASES.reduce(
+    (acc, phrase) => acc.replace(new RegExp(`\\b${phrase}\\b`, 'g'), ' '),
+    text.toLowerCase(),
+  );
+  return keywords.some((keyword) => new RegExp(`\\b${keyword}\\b`).test(lower));
 }
 
 const CATEGORY_LABEL: Record<FoodCategory, string> = {
