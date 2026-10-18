@@ -41,6 +41,7 @@ function Field({ label, id, error, children }: { label: string; id: string; erro
 
 export default function DonorForm() {
   const [drafts, setDrafts] = useState<EditableItem[]>([]);
+  const [description, setDescription] = useState('About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.');
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -146,6 +147,22 @@ export default function DonorForm() {
     <form onSubmit={save} className="flex min-w-0 flex-col gap-5">
       <fieldset disabled={saving || uncertain} className="flex min-w-0 flex-col gap-5">
         <legend className="mb-3 font-display text-xl font-semibold">Add surplus food</legend>
+        <section aria-labelledby="ai-preview-heading" className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 id="ai-preview-heading" className="font-display text-xl font-semibold">Describe your surplus</h2>
+            <span className="rounded-full bg-warn-tint px-3 py-1 text-sm font-bold text-warn-text">AI preview · sample data</span>
+          </div>
+          <label htmlFor="surplus-description" className="font-semibold">What’s left in your kitchen?</label>
+          <textarea id="surplus-description" rows={4} maxLength={3000} value={description}
+            onChange={(event) => setDescription(event.target.value)} aria-describedby="ai-preview-note"
+            className="w-full min-w-0 resize-y rounded-lg border border-field p-3 text-base" />
+          <p id="ai-preview-note" className="text-sm text-muted">Prototype preview: this loads fixed sample drafts, not results extracted from your description. OCI Generative AI integration is planned.</p>
+          <button type="button" disabled={!description.trim() || drafts.length > 0}
+            onClick={() => { loadSamples(); setMessage('Sample drafts loaded. Review each item, confirm weights, and enter pickup availability before posting. No OCI AI request was made.'); }}
+            className="min-h-12 self-start rounded-lg border border-brand px-5 font-bold text-brand disabled:opacity-50">Preview AI drafts (sample)</button>
+          {drafts.length > 0 && <p className="text-sm text-muted">Remove the current draft items to load another preview. You can edit them below or add items manually.</p>}
+          <p className="text-sm text-muted">Nothing is posted until you review and confirm.</p>
+        </section>
         <p className="text-muted">Enter each item and review its destination and pickup availability before posting. Times use your device’s local time.</p>
         <div className="flex flex-wrap gap-3">
           <button type="button" disabled={drafts.length >= 20} onClick={addItem}
