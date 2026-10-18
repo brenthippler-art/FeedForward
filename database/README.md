@@ -35,8 +35,8 @@ meat content remains null. Category names are not restricted to the frontend's
 old hardcoded category union.
 
 The recipient screen reads listings and saved claims and books through the POST
-claims API below. Neither the screen nor the API certifies food safety or records
-completed pickups. The older `RecipientBoard` remains an unused demo component
+claims API below. The screen does not yet submit pickup confirmations. The pickup API below
+records completion; neither endpoint certifies food safety. The older `RecipientBoard` remains an unused demo component
 with local-only actions.
 
 ## Verify on the OCI-connected application
@@ -288,3 +288,29 @@ it and refresh Available food. Check read/write error states without automatical
 retrying submissions. Local regression command: `node --test tests/*.test.mjs`.
 Browser tests can mock persistence; live insertion and subsequent claim/pickup
 verification should use designated test records with the schema owner.
+
+## Pickup confirmation API
+
+`POST /api/pickups` accepts `{ "claimId": 7, "actualLbs": 10.125 }` from a
+signed-in recipient. The session determines ownership; the client cannot choose
+another recipient or submit a partial quantity. Actual weight must be a JSON
+number from 0.001 through 9999999.999 pounds, with at most three decimal places.
+
+The transaction locks Item before Claim, rechecks ownership, rejects an existing
+Pickup, and inserts the entire current item quantity with measured weight and a
+UTC completion timestamp. The existing stock trigger alone decrements inventory.
+The API requires current recipient acceptance rules, an open Central-time pickup
+window, food that is ready, the reserved pickup time reached, and an unexpired
+pickup deadline (required for Tier 1). It does not backdate completion.
+
+Success returns 201 with `{ id, claimId, actualLbs, pickedUpAt }`. Invalid input
+returns 400, signed-out requests 401, wrong role/ownership or changed food rules
+403, missing reservations 404, and duplicate/unavailable completions 409.
+Unexpected database errors return 503: refresh saved pickups before retrying,
+since a connection failure during commit can leave the outcome uncertain.
+
+Prerequisites: `Pickup.actual_lbs`, unique `uq_pickup_claim`, the whole-listing
+guard, and the existing inventory trigger must be installed. This endpoint does
+not run migrations. The recipient button is intentionally not wired in this API
+change. API/service tests use isolated database doubles and do not verify OCI SQL,
+trigger execution, or real concurrent database transactions.
