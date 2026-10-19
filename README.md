@@ -1,7 +1,11 @@
 # FeedForward
 
 Route surplus food to its best use: **people first, then farms, then compost.**
-Built for HackTN26, Challenge #1: *From Surplus to Social Good.*
+Built at HackTN 2026 in Nashville for Challenge #1: *From Surplus to Social Good.*
+
+FeedForward is a working food-recovery prototype: institutions post surplus,
+community organizations reserve eligible food, and completed pickups feed a
+database-backed impact dashboard.
 
 **Live demo:** http://163.192.109.118
 
@@ -9,94 +13,244 @@ Built for HackTN26, Challenge #1: *From Surplus to Social Good.*
 
 [![Watch the FeedForward product video](brag-output/brag.jpg)](brag-output/LeftoverLegends.mp4)
 
-[Watch LeftoverLegends.mp4](brag-output/LeftoverLegends.mp4) — a 24-second narrated walkthrough of posting surplus food and reserving a pickup.
+[Watch LeftoverLegends.mp4](brag-output/LeftoverLegends.mp4) — a 24-second narrated
+walkthrough of posting surplus food and reserving a pickup.
 
 ## The problem
-Restaurants, campus dining halls and hospital kitchens throw out usable food because nothing connects what's available tonight to who could use it. Pantries and shelters can't see the surplus, and farms that would take scraps for animal feed never hear about it. The handoff (what's safe, who takes it, when it's picked up) happens by phone, if at all.
+
+Kitchens need to communicate what is available, who can accept it, and when it
+can be collected. Pantries, shelters, farms, and compost sites have different
+needs and pickup schedules. FeedForward brings those details into one workflow
+and records the handoff, rather than counting an offer as a completed donation.
+
+## What works today
+
+| Feature | Implementation |
+| --- | --- |
+| Donor listings | Reviewed manual entry, database persistence, and posted-food status |
+| Recipient matching | Up to three suggestions based on accepted tiers, refused categories, and configured pickup windows; estimated ZIP-based distance where available |
+| Reservations | Whole-listing bookings with saved history and duplicate protection |
+| Pickup confirmation | Actual weight recording, recipient ownership checks, and inventory updates |
+| Impact reporting | Completed pickup counts, weight by destination, recent history, and estimated meals from people-tier pounds |
+| AI draft preview | Clearly labeled, editable sample drafts; it does not process the description or call OCI Generative AI |
+
+**Demo scope:** sign-in selects a predefined organization; it is not production
+authentication. The live database includes synthetic presentation donations, so
+dashboard totals demonstrate the reporting workflow rather than verified community
+impact. Live OCI Generative AI extraction and production authentication remain
+future work. Ratings are a coming-soon preview.
 
 ## How it works
-1. A donor describes surplus in plain words.
-2. **OCI Generative AI** turns that into structured listings (item, quantity, condition, category).
-3. Our tier rules, not the AI, assign each item a tier: **1 · People**, **2 · Animals** (plant-based only), or **3 · Compost**.
-4. The donor reviews and confirms every listing.
-5. The app suggests up to 3 verified recipients whose own acceptance rules fit.
-6. A recipient claims the listing, pickup weight is logged, and the impact dashboard updates.
 
-**The trust rule:** the AI drafts, the recipient's own rules decide the match, and a person confirms every step.
+1. A donor enters food details manually or loads sample drafts from the AI-workflow preview.
+2. The donor chooses a destination: **1 · People**, **2 · Animals**, or **3 · Compost**.
+3. Server-side validation checks the details and rejects incompatible choices, such as meat-containing items for animal feed. The donor reviews and confirms before saving.
+4. The donor can view suggested recipients for a saved listing. Recipients see food permitted by their own acceptance rules, with bookable pickup times.
+5. A recipient reserves the entire listing. The reservation persists after refresh, and the food is hidden from other recipients.
+6. At collection, the recipient confirms actual weight. The backend records completion, the database updates inventory, and the impact dashboard reads the saved results.
+
+**Trust principle:** explicit rules and human review govern the handoff. The
+planned AI integration will assist with drafting; it will not certify food safety.
+Suggested recipients are registered demo organizations, not evidence of an
+implemented external verification process.
 
 ## Team
+
 | Role | Name |
 | --- | --- |
-| Hacker: Frontend, design, deploys | Brenton Hippler |
-| Hacker: Backend, database, AI | Niranjan |
-| Herder: Project lead | Amber E. |
+| Herder: Project lead | Amber Eckler |
 | Hustler: Business and pitch | Meklit Sitotaw |
+| Hacker / Hipster: Backend APIs, frontend integration, and testing | Manas Tiwari |
+| Hacker: Frontend, design, and deployment | Brenton Hippler |
+| Hacker: Database and backend | Niranjan Sharma |
 
-## Stack
-- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS v4
-- **Backend:** Next.js API routes, mysql2
-- **Oracle Cloud Infrastructure:** Compute (Oracle Linux, nginx, pm2), MySQL HeatWave, Generative AI
-- **CI:** GitHub Actions (lint, type check, build on every PR)
+## Technology stack
 
-## Architecture
+| Layer | Technology and use |
+| --- | --- |
+| Application | Next.js 16 App Router and React 19; frontend and backend in one deployment |
+| Languages | TypeScript for application logic; SQL for persistence and reporting |
+| Frontend | Tailwind CSS v4, responsive forms, and accessible status/error feedback |
+| Backend | Node.js and Next.js route handlers; JSON APIs with server-side validation |
+| Database access | `mysql2/promise` for parameterized SQL and connection pooling; Drizzle ORM for typed schema/relations and selected queries |
+| Database tooling | Drizzle Kit introspection, SQL schema, and explicit migration scripts |
+| OCI deployment | OCI Compute running Oracle Linux, nginx reverse proxy, and PM2 process management |
+| Persistence | OCI MySQL HeatWave DB System on a private subnet |
+| Quality checks | Node.js test runner, ESLint, TypeScript, and GitHub Actions |
+| Planned AI | OCI Generative AI for structured extraction into editable drafts |
+
+## Architecture and data flow
+
+```mermaid
+flowchart LR
+    Browser[Donor or recipient browser] --> Nginx[nginx on OCI Compute]
+    Nginx --> App[Next.js on Node.js / PM2]
+    App --> API[Session checks and API handlers]
+    API --> Rules[Validation and business logic]
+    Rules --> Pool[mysql2 connection pool]
+    Pool --> DB[(MySQL HeatWave)]
+    DB --> Pool
+    API --> Browser
 ```
-Browser
-  └─ http → nginx (port 80, OCI Compute)
-              └─ Next.js app (port 3000, pm2)
-                   ├─ MySQL HeatWave (private subnet, 10.0.1.x:3306)
-                   └─ OCI Generative AI (us-chicago-1)
+
+nginx receives public HTTP traffic and forwards it to Next.js on port 3000.
+The application connects to MySQL over private networking; the browser never
+connects directly to the database. Database credentials come from server-side
+environment variables. The pool reuses up to five connections per application
+pool. OCI Generative AI is not part of the current request path.
+
+The core data model is:
+
+```text
+Organization → Donor → Item
+Organization → Recipient → Claim → Pickup
+                              ↑
+                             Item
 ```
-The database sits on a private subnet and is reachable only from the web server. GenAI calls are signed with an OCI API key stored on the server, never in this repo.
+
+Recipient preferences live in `AcceptedTier`, `RefusedCategory`, and
+`AcceptanceRule`; `Category` provides food classifications. See
+[DB_DESIGN.md](DB_DESIGN.md) for the ERD and
+[database/README.md](database/README.md) for setup and API behavior.
+
+## Backend engineering
+
+- **Transactions and locking:** reservation and completion operations lock the
+  item before checking/writing related records. Errors roll back the transaction
+  and connections are released. Unique constraints allow one claim per listing
+  and one completed pickup per claim.
+- **Inventory changes at collection:** a claim reserves food without decrementing
+  stock. Pickup insertion invokes a whole-listing guard and the existing inventory
+  trigger. Application code does not independently decrement stock a second time.
+- **Session-derived ownership:** listing creation, reservations, matching, and
+  pickup completion use the organization selected in the session. Request fields
+  cannot override that identity. This is authorization within the demo identity
+  model, not a replacement for real authentication.
+- **Explainable matching:** queries filter recipients by accepted tier and refused
+  category, require pickup windows, and rank by approximate ZIP-based distance
+  when known. The booking endpoint performs final time-window and expiry checks.
+  Viewing a suggestion does not assign food or create a claim.
+- **Time handling:** availability is stored and exchanged in UTC. Recipient
+  schedules are evaluated in `America/Chicago`, including overnight windows and
+  daylight-saving changes. The backend clock is checked after lock waits.
+- **Reporting from completed handoffs:** impact joins `Pickup → Claim → Item`.
+  Recorded weight takes priority; historical unmeasured pickups use collected
+  quantity × unit weight, rather than remaining inventory. Reporting is all-time;
+  recipients see their own received pickups, while donors and anonymous visitors
+  see labeled platform totals. Meal equivalents are estimates, not counted meals.
+- **Uncertain-response recovery:** the UI reloads saved reservations after a write
+  attempt instead of automatically repeating a POST that may already have committed.
+- **Shared contracts:** TypeScript types connect API responses and frontend
+  components, while runtime validation checks untrusted request bodies.
 
 ## API
-| Endpoint | Receives | Returns |
+
+| Endpoint | Input / scope | Result |
 | --- | --- | --- |
-| `POST /api/extract` | `{ text, passcode }` | `DraftListing[]` (not saved) |
-| `POST /api/listings` | `{ confirmed: true, listings: [...] }` with per-unit weight and UTC availability; donor from session | Saved listings |
-| `GET /api/listings` | Optional `?tier=` | Available food for recipients; own posted food for donors |
-| `GET /api/matches?listingId=` | `listingId` | Up to 3 `RecipientMatch` |
-| `POST /api/claims` | `{ listingId, recipientId, pickupTime }` | `Claim` |
-| `POST /api/pickups` | `{ claimId, actualLbs }` | `Pickup` |
-| `GET /api/impact` | — | `Impact` |
-| `GET /api/health` | — | `{ ok, db }` |
+| `POST /api/listings` | `{ confirmed: true, listings: [...] }`; donor from session | Saved listings |
+| `GET /api/listings` | Optional `?tier=1`, `2`, or `3`; identity from session | Own donor listings or eligible recipient listings with pickup slots |
+| `GET /api/matches?listingId=...` | A listing owned by the donor | Up to three recipient suggestions |
+| `POST /api/claims` | `{ listingId, pickupTime }`; recipient from session | Saved whole-listing reservation |
+| `GET /api/claims` | Signed-in recipient | Saved reservations and completion status |
+| `POST /api/pickups` | `{ claimId, actualLbs }`; reservation owner | Completed pickup with recorded weight |
+| `GET /api/impact` | Recipient-specific or platform scope derived from session | Totals, destination breakdown, estimated meals, and recent pickups |
+| `GET /api/health` | Connectivity check | Database availability |
+| `GET /api/database-check` | Diagnostic table check | Selected table counts and categories |
 
-Shapes are defined in [`types/index.ts`](types/index.ts). Errors return `{ error }` with a 400 or 500 status.
+Operational responses use `Cache-Control: no-store`. Errors return JSON with an
+`error` message and relevant status: 400 invalid input, 401 signed out, 403 denied,
+404 missing reservation/listing, 409 conflict or unavailable completion, or 503
+unexpected operational/database failure. The health endpoint uses 500 on failure.
 
-## Technical decisions
-- **The AI classifies; code decides.** Tiers come from `lib/tiers.ts`, built on USDA time-and-temperature guidance and the Swine Health Protection Act (Kentucky and Tennessee prohibit feeding food waste to pigs). Matching is deterministic, so it's explainable and repeatable.
-- **Shared types as a contract**, so frontend and backend could build in parallel against mock data.
-- **Advisory, not certification.** FeedForward cites its sources and requires human confirmation; it doesn't make legal or food-safety determinations.
-
-## Accessibility and testing
-- Labels on every input, `aria-current` on navigation, `aria-live` for drafted results, a skip link, and 44px touch targets
-- Layout works at phone width
-- CI runs ESLint, `tsc --noEmit` and `next build` on every pull request
-
-## Screenshots
-_Coming Sunday._
+There is no implemented `/api/extract` endpoint yet. Response contracts are in
+[types/index.ts](types/index.ts); policy logic is in
+[lib/listing-input.ts](lib/listing-input.ts),
+[lib/claim-policy.ts](lib/claim-policy.ts), and
+[lib/pickup-policy.ts](lib/pickup-policy.ts).
 
 ## Local setup
+
+Use Node.js 24 to match CI.
+
 ```bash
 git clone https://github.com/brenthippler-art/hacktn-starter.git
 cd hacktn-starter
-npm install
-npm run dev
+npm ci
 ```
-Create `.env.local` (never commit it):
-```
+
+Create `.env.local` with credentials for a reachable development database:
+
+```dotenv
 DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=hacktn
 ```
-The database and GenAI are reachable only from the OCI server, so locally the screens run on mock data from `lib/mock.ts`.
 
-## Deploy (OCI server)
+The private OCI database is not directly reachable from an ordinary local laptop.
+Use an appropriately configured secure connection or a separate local MySQL
+instance with the required schema and migrations. See [database setup](database/README.md)
+and [db/schema.sql](db/schema.sql). Do not run schema or seed scripts against a
+shared database without coordinating with the team; `db/seed.ts` resets data.
+
 ```bash
-~/hacktn-starter/deploy.sh   # git pull, npm ci, build, pm2 restart
+npm run dev
 ```
 
-## Sources
+Open http://localhost:3000. The sample draft preview works without OCI AI, but
+listings, reservations, pickups, and impact require a database connection. They
+do not silently fall back to mock data when database requests fail.
+
+## Testing and accessibility
+
+```bash
+node --test tests/*.test.mjs
+npx tsc --noEmit
+npm run lint
+npm run build
+```
+
+GitHub Actions runs dependency installation, ESLint, type checking, and the
+production build on PRs targeting `main` and pushes to `main`. The Node test suite
+is run separately; it is not currently a CI step.
+
+Tests cover validation, role/ownership checks, pickup windows, reservation and
+completion errors, transaction behavior with isolated database doubles, migration
+preflight, and impact scoping. They do not replace testing SQL, triggers, and
+concurrency against MySQL. Browser checks exercise mobile layouts, draft editing,
+completion, retry states, and lost-response recovery with controlled API fixtures.
+
+The interface includes labeled inputs, status announcements, focus management,
+a skip link, and touch-friendly controls. The team also exercised the core
+post → reserve → collect → impact workflow on the live deployment.
+
+## Deployment
+
+On the existing OCI application server, the team's server-local helper is:
+
+```bash
+~/hacktn-starter/deploy.sh
+```
+
+It pulls updates, installs dependencies, builds the application, and restarts its
+PM2 process. The helper is not tracked in this repository. A fresh deployment needs
+nginx, PM2, environment variables, and private database connectivity configured.
+Database migrations are explicit operations, not automatic application-startup work.
+
+## Next steps
+
+- Connect OCI Generative AI to the draft-review workflow, with validated outputs
+  and manual entry retained as a fallback.
+- Replace demo sign-in with production authentication and organization onboarding.
+- Implement recipient verification and the currently preview-only ratings flow.
+- Add cancellation and listing lifecycle changes with matching database rules.
+
+## Sources and scope
+
+FeedForward provides handling guidance and requires human confirmation; it does
+not certify food safety or make legal determinations. Demo data and estimated meal
+equivalents should not be presented as verified real-world outcomes.
+
 - [USDA APHIS: Swine Health Protection Act and human food waste](https://www.aphis.usda.gov/sites/default/files/shpa-human-food-waste-and-swine.pdf)
 - [CHLPI: Food Donation Improvement Act](https://chlpi.org/news-and-events/news-and-commentary/food-law-and-policy/new-federal-food-donation-law-seen-as-welcome-and-overdue/)
 - [Modern Farmer: Kentucky food donation law (2017)](https://modernfarmer.com/2017/05/kentucky-food-immunity-bill/)
