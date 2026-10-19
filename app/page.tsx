@@ -85,9 +85,9 @@ export default function Home() {
               id="hero-heading"
               className="font-display text-[32px] font-bold uppercase leading-[1.05] sm:text-[52px]"
             >
-              Rescue the surplus.
+              Tonight&apos;s leftovers.
               <br />
-              Feed what&apos;s next.
+              Tomorrow&apos;s meals.
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">
               FeedForward routes tonight&apos;s kitchen leftovers to their best
