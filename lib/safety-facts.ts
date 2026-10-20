@@ -45,12 +45,4 @@ export const safetyFacts: SafetyFact[] = [
       href: 'https://apps.legislature.ky.gov/law/kar/titles/302/022/080/',
     },
   },
-  {
-    title: 'Tennessee: pigs only with approved processing',
-    body: 'Tennessee also counts plant waste from kitchens and restaurants as garbage. Feeding it to swine is unlawful unless it has been processed in a way approved by the state Commissioner of Agriculture. Bakery waste and dairy waste from milk plants are not counted as garbage.',
-    source: {
-      label: 'Tenn. Code § 44-2-404',
-      href: 'https://law.justia.com/codes/tennessee/title-44/chapter-2/part-4/section-44-2-404/',
-    },
-  },
 ];

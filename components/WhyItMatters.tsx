@@ -57,7 +57,7 @@ export default function WhyItMatters() {
       <div className="flex flex-col gap-8 rounded-2xl bg-brand p-8 text-white md:flex-row md:items-center md:justify-between">
         <div className="flex max-w-xl flex-col gap-3">
           <h3 className="font-display text-2xl font-bold">
-            The opportunity is right here in Nashville.
+            The opportunity is right here in Bowling Green.
           </h3>
           <p className="text-white/90">
             Much of today&apos;s food rescue comes from grocery stores.

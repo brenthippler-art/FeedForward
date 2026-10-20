@@ -3,12 +3,8 @@
 // service — good enough for sorting matches by rough distance, not for anything
 // safety- or precision-critical. No geocoding API is configured for this app.
 const ZIP_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  '37201': { lat: 36.1659, lng: -86.7844 }, // Downtown
-  '37203': { lat: 36.1500, lng: -86.7980 }, // Midtown / Music Row
-  '37206': { lat: 36.1795, lng: -86.7389 }, // East Nashville
-  '37210': { lat: 36.1304, lng: -86.7420 }, // South Nashville
-  '37218': { lat: 36.2140, lng: -86.8720 }, // Bordeaux / North Nashville
-  '37232': { lat: 36.1447, lng: -86.8027 }, // Vanderbilt Medical Center
+  '42101': { lat: 39.993449, lng: -86.441620 }, // Downtown
+  '42104': { lat: 39.909461, lng: -86.370727 }, // Midtown / Music Row
 };
 
 export function zipCoordinates(zip: string): { lat: number; lng: number } | null {
