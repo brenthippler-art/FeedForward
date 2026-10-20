@@ -8,7 +8,6 @@ import {
   ListingError,
   parseListingRequest,
 } from "@/lib/listing-input";
-import { mockDrafts } from "@/lib/mock";
 import { formatPickupDateTime } from "@/lib/format";
 import TierBadge from "./TierBadge";
 import Link from "next/link";
@@ -86,9 +85,7 @@ function Field({
 
 export default function DonorForm() {
   const [drafts, setDrafts] = useState<EditableItem[]>([]);
-  const [description, setDescription] = useState(
-    "About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.",
-  );
+  const [description, setDescription] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -188,13 +185,7 @@ export default function DonorForm() {
       tier: draft.tier,
     }));
   }
-  function loadSamples() {
-    setDrafts(toEditable(mockDrafts));
-    setConfirmed(false);
-    setErrors({});
-    setPostError("");
-    setMessage("");
-  }
+ 
   async function draftWithAI() {
     setDrafting(true);
     setAiError("");
@@ -365,6 +356,7 @@ export default function DonorForm() {
             </label>
             <textarea
               id="surplus-description"
+              placeholder="Example: About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch, and a bucket of potato peels."
               rows={4}
               maxLength={3000}
               value={description}
@@ -413,17 +405,9 @@ export default function DonorForm() {
               onClick={addItem}
               className="min-h-12 rounded-lg bg-brand px-5 font-bold text-white disabled:opacity-50"
             >
-              Add food item
+              Add food item manually
             </button>
-            {drafts.length === 0 && (
-              <button
-                type="button"
-                onClick={loadSamples}
-                className="min-h-12 rounded-lg border border-brand px-5 font-bold text-brand"
-              >
-                Use sample items
-              </button>
-            )}
+            
           </div>
           {drafts.map((draft, index) => {
             const field = (name: string) => {
