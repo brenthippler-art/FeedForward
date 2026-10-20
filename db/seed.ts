@@ -122,7 +122,7 @@ async function main() {
       orgId: 13,
       orgName: 'Drakes Creek Goat & Garden',
       streetAddress: '123456 Old Scottsville Rd',
-      city: 'Bowling Green',
+      city: 'Alvaton',
       state: 'KY',
       zipCode: '42104',
       contactName: 'Joel Salatin',
