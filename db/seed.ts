@@ -1,8 +1,8 @@
 // Wipes and reseeds demo data via Drizzle, in FK-dependency order:
 // Organization -> Donor/Recipient -> Category -> Item -> AcceptedTier/RefusedCategory/AcceptanceRule -> Claim -> Pickup
 //
-// Preserves the original demo rows (org 1 "Two-Step Hot Chicken", org 11 "Harmony Hall
-// Community Pantry", their Donor/Recipient rows, Item 1 "DEMO - Fresh carrots", and the
+// Preserves the original demo rows (org 1 "Barren River Barbecue", org 11 "Fountain Square Community Pantry", 
+// their Donor/Recipient rows, Item 1 "DEMO - Fresh carrots", and the
 // AcceptedTier (11, 1) row) — everything else is deleted and rebuilt fresh on every run.
 //
 // Org IDs match lib/demo-users.ts exactly, since the demo sign-in flow depends on them:
@@ -87,47 +87,47 @@ async function main() {
   await db.insert(organization).values([
     {
       orgId: 2,
-      orgName: 'Athens of the South Dining Hall',
+      orgName: 'Hiilltop Dining Hall',
       streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37203',
-      contactName: 'Demo Donor',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42101',
+      contactName: 'Jimmy Dean',
       contactEmail: 'dining@example.com',
-      contactPhone: '615-555-0102',
+      contactPhone: '270-555-0102',
     },
     {
       orgId: 3,
-      orgName: 'Music City Hospital',
-      streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37232',
-      contactName: 'Demo Donor',
+      orgName: 'Warren Regional Hospital',
+      streetAddress: '1 Hospital Way',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42101',
+      contactName: 'Florence Nightingale',
       contactEmail: 'hospital@example.com',
-      contactPhone: '615-555-0103',
+      contactPhone: '270-555-0103',
     },
     {
       orgId: 12,
-      orgName: 'Back Porch Supper Table',
-      streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37206',
+      orgName: 'Porch LightSupper Table',
+      streetAddress: '1 Porch Light',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42101',
       contactName: 'Demo Recipient',
       contactEmail: 'shelter@example.com',
-      contactPhone: '615-555-0112',
+      contactPhone: '270-555-0112',
     },
     {
       orgId: 13,
-      orgName: 'Riverbend Goat & Garden',
-      streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37218',
-      contactName: 'Demo Recipient',
+      orgName: 'Drakes Creek Goat & Garden',
+      streetAddress: '123456 Old Scottsville Rd',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42104',
+      contactName: 'Joel Salatin',
       contactEmail: 'farm@example.com',
-      contactPhone: '615-555-0113',
+      contactPhone: '270-555-0113',
     },
     {
       orgId: 14,

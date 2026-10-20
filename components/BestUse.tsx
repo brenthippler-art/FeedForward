@@ -14,7 +14,7 @@ const tiers: { tier: Tier; title: string; body: string; who: string }[] = [
     tier: 2,
     title: 'Then farms',
     body: 'Plant-based scraps that never touched meat become feed for goats, chickens, and other livestock.',
-    who: 'Local livestock farms (never pigs, per KY and TN law)',
+    who: 'Local livestock farms (never pigs, per Kentucky law)',
   },
   {
     tier: 3,
@@ -68,7 +68,7 @@ export default function BestUse() {
             <h3 className="font-display text-xl font-semibold">The landfill is the last resort</h3>
             <p className="text-muted">
               Food buried in a landfill doesn&apos;t just go to waste. It rots and releases methane,
-              and Nashville&apos;s main landfill is running out of room.
+              and Bowling Green&apos;s air quality is deteriorating.
             </p>
           </div>
           {landfillStats.map((stat) => (

@@ -55,15 +55,15 @@ export const mockMatches: RecipientMatch[] = [
   {
     recipient: {
       id: 11,
-      name: 'Harmony Hall Community Pantry',
+      name: 'Fountain Square Community Pantry',
       type: 'pantry',
-      address: '[SAMPLE ADDRESS]',
+      address: '1 Fountain Square, Bowling Green, KY 42101',
       lat: 36.99,
       lng: -86.44,
       verified: true,
       contactName: 'Dana Reyes',
       phone: '(270) 555-0142',
-      email: 'pickups@harmonyhall.example',
+      email: 'pickups@fountainsquare.example',
     },
     distanceMiles: 1.8,
     reasons: ['Accepts fresh produce', 'Picks up until 6:00 pm today'],
@@ -72,15 +72,15 @@ export const mockMatches: RecipientMatch[] = [
   {
     recipient: {
       id: 12,
-      name: 'Back Porch Supper Table',
+      name: 'Porch Light Supper Table',
       type: 'pantry',
-      address: '[SAMPLE ADDRESS]',
+      address: '1 Porch Light, Bowling Green, KY 42101',
       lat: 36.97,
       lng: -86.47,
       verified: true,
       contactName: 'Marcus Webb',
       phone: '(270) 555-0187',
-      email: 'kitchen@backporch.example',
+      email: 'kitchen@porchlight.example',
     },
     distanceMiles: 3.4,
     reasons: ['Accepts produce for hot meals', 'Picks up until 7:30 pm'],
@@ -89,15 +89,15 @@ export const mockMatches: RecipientMatch[] = [
   {
     recipient: {
       id: 13,
-      name: 'Riverbend Goat & Garden',
+      name: 'Drakes Creek Goat & Garden',
       type: 'farm',
-      address: '[SAMPLE ADDRESS]',
+      address: '123456 Old Scottsville Rd, Bowling Green, KY 42104',
       lat: 37.03,
       lng: -86.38,
       verified: true,
-      contactName: 'Jo Hollis',
+      contactName: 'Joel Salatin',
       phone: '(270) 555-0119',
-      email: 'hello@riverbendgoatandgarden.example',
+      email: 'hello@drakescreekgoatandgarden.example',
     },
     distanceMiles: 6.2,
     reasons: ['Backup if people-tier pickups fall through', 'Accepts vegetable trimmings'],
@@ -111,10 +111,10 @@ export const mockImpact: Impact = {
   meals: 0, // 0 until the hustler supplies a sourced lbs-per-meal figure
   pickups: 38,
   recent: [
-    { pickupId: 4, date: '2026-10-16', item: 'Romaine lettuce', donorName: 'Two-Step Hot Chicken', recipientName: 'Harmony Hall Community Pantry', tier: 1, lbs: 31 },
-    { pickupId: 3, date: '2026-10-16', item: 'Potato peels', donorName: 'Two-Step Hot Chicken', recipientName: 'Last Call Compost', tier: 3, lbs: 14 },
-    { pickupId: 2, date: '2026-10-15', item: 'Vegetable trimmings', donorName: 'Two-Step Hot Chicken', recipientName: 'Riverbend Goat & Garden', tier: 2, lbs: 22 },
-    { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', donorName: 'Two-Step Hot Chicken', recipientName: 'Back Porch Supper Table', tier: 1, lbs: 18 },
+    { pickupId: 4, date: '2026-10-16', item: 'Romaine lettuce', donorName: 'Barren River Barbecue', recipientName: 'Fountain Square Community Pantry', tier: 1, lbs: 31 },
+    { pickupId: 3, date: '2026-10-16', item: 'Potato peels', donorName: 'Barren River Barbecue', recipientName: 'Last Call Compost', tier: 3, lbs: 14 },
+    { pickupId: 2, date: '2026-10-15', item: 'Vegetable trimmings', donorName: 'Barren River Barbecue', recipientName: 'Drakes Creek Goat & Garden', tier: 2, lbs: 22 },
+    { pickupId: 1, date: '2026-10-14', item: 'Day-old bread', donorName: 'Barren River Barbecue', recipientName: 'Porch Light Supper Table', tier: 1, lbs: 18 },
   ],
 };
 

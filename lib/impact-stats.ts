@@ -13,9 +13,15 @@ export type StoryAct = {
 };
 
 const mealGap2026 = {
-  name: 'Feeding America, Map the Meal Gap 2026',
+  name: 'Feeding America, Map the Meal Gap 2026, via Feeding Kentucky',
   year: '2024 data',
-  href: 'https://netfoodbank.org/new-data-reveals-food-insecurity-in-tennessee-reaches-highest-level-in-years/',
+  href: 'https://nkytribune.com/2026/07/new-feeding-america-data-confirms-hunger-is-growing-1-in-4-kyians-lack-nutrition-they-need/',
+};
+
+const heartland2026 = {
+  name: 'Feeding America, Kentucky’s Heartland, via WBKO',
+  year: 'Aug 2026',
+  href: 'https://www.wbko.com/2026/08/28/feeding-america-kentuckys-heartland-reports-rise-local-food-insecurity-ahead-hunger-action-month/',
 };
 
 export const storyActs: StoryAct[] = [
@@ -25,7 +31,7 @@ export const storyActs: StoryAct[] = [
     heading: 'Hunger is closer than you think',
     body: 'Food insecurity reaches every county in America, and the South is hit hardest.',
     stats: [
-      { value: '1 in 6', label: 'Tennesseans faced food insecurity', source: mealGap2026 },
+      { value: '18.2%', label: 'of Kentuckians faced food insecurity', source: mealGap2026 },
     ],
   },
   {
@@ -49,29 +55,21 @@ export const storyActs: StoryAct[] = [
     id: 'squeeze',
     eyebrow: 'The squeeze',
     heading: 'The people fighting hunger are stretched thin',
-    body: 'Food banks are losing federal supply just as the cost of feeding people keeps rising.',
+    body: 'More of our neighbors need help every year, and food banks are working to keep up.',
     stats: [
       {
-        value: '30%',
-        label: "of Second Harvest of Middle Tennessee's USDA food supply lost to federal cuts",
-        source: {
-          name: 'WSMV',
-          year: '2025',
-          href: 'https://www.wsmv.com/2025/07/09/second-harvest-food-bank-lose-significant-amount-food-supplies-due-federal-cuts/',
-        },
+        value: '23,000 more',
+        label: 'people faced food insecurity in one year across the region served by Feeding America, Kentucky’s Heartland',
+        source: heartland2026,
       },
     ],
   },
 ];
 
 export const opportunityStat: Stat = {
-  value: '9.3 million',
-  label: "meals a year could be rescued by Nashville's restaurants, institutions, and caterers - closing about 23% of Davidson County's meal gap",
-  source: {
-    name: 'Nashville Food Rescue Landscape Analysis',
-    year: '2017',
-    href: 'https://filetransfer.nashville.gov/portals/0/sitecontent/pw/docs/recycle/MasterPlan/Nashville%20Food%20Rescue.pdf',
-  },
+  value: '25,710',
+  label: 'Warren County residents, about 1 in 6, don’t have consistent access to enough food',
+  source: heartland2026,
 };
 
 export const landfillStats: Stat[] = [
@@ -80,16 +78,8 @@ export const landfillStats: Stat[] = [
     label: 'of landfill methane emissions come from wasted food',
     source: { name: 'U.S. EPA', year: '2026', href: 'https://epa.gov/sustainable-management-food/wasted-food-scale' },
   },
-  {
-    value: '~4 years',
-    label: "of capacity left at Middle Point, the landfill that takes most of Nashville's trash",
-    source: {
-      name: 'WPLN',
-      year: 'Feb 2025',
-      href: 'https://wpln.org/post/if-nashville-is-blocked-from-using-middle-point-landfill-whats-next/',
-    },
-  },
 ];
+
 
 export type PullQuoteData = {
   quote: string;
@@ -119,7 +109,7 @@ export const kitchenQuotes: PullQuoteData[] = [
       href: 'https://www.pbs.org/newshour/show/top-chef-tom-colicchio-on-americas-staggering-waste-of-food',
     },
   },
-    {
+  {
     quote: 'When we throw away food, we are collectively wasting resources, wasting opportunity and wasting dignity.',
     name: 'Massimo Bottura',
     role: 'Chef, Osteria Francescana',
