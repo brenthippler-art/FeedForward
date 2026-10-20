@@ -12,11 +12,12 @@ export async function signIn(formData: FormData) {
 //   This is a demo identity, not secure authentication. In a real application, you would verify the user's credentials and create a secure session.  
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, String(user.orgId), {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 60 * 60 * 24 * 7,
+});
 
   redirect(user.role === 'donor' ? '/donor' : '/recipient');
 }

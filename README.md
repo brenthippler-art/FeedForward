@@ -7,7 +7,7 @@ FeedForward is a working food-recovery prototype: institutions post surplus,
 community organizations reserve eligible food, and completed pickups feed a
 database-backed impact dashboard.
 
-**Live demo:** http://163.192.109.118
+**Live demo:** https://feedforward.brentoncodes.dev
 
 ## Product video
 
@@ -35,10 +35,10 @@ and records the handoff, rather than counting an offer as a completed donation.
 | AI draft preview | Clearly labeled, editable sample drafts; it does not process the description or call OCI Generative AI |
 
 **Demo scope:** sign-in selects a predefined organization; it is not production
-authentication. The live database includes synthetic presentation donations, so
-dashboard totals demonstrate the reporting workflow rather than verified community
-impact. Live OCI Generative AI extraction and production authentication remain
-future work. Ratings are a coming-soon preview.
+authentication. The live database was reset after the hackathon, so any listings
+and dashboard totals are test entries, not verified community impact. Live OCI
+Generative AI extraction and production authentication remain future work.
+Ratings are a coming-soon preview.
 
 ## How it works
 
@@ -74,8 +74,8 @@ implemented external verification process.
 | Backend | Node.js and Next.js route handlers; JSON APIs with server-side validation |
 | Database access | `mysql2/promise` for parameterized SQL and connection pooling; Drizzle ORM for typed schema/relations and selected queries |
 | Database tooling | Drizzle Kit introspection, SQL schema, and explicit migration scripts |
-| OCI deployment | OCI Compute running Oracle Linux, nginx reverse proxy, and PM2 process management |
-| Persistence | OCI MySQL HeatWave DB System on a private subnet |
+| OCI deployment | OCI Always Free Ampere A1 Compute (ARM) running Oracle Linux 9, nginx reverse proxy with Let's Encrypt HTTPS, and PM2 process management |
+| Persistence | MySQL 8.0 on the application server, accepting local connections only, with nightly backups |
 | Quality checks | Node.js test runner, ESLint, TypeScript, and GitHub Actions |
 | Planned AI | OCI Generative AI for structured extraction into editable drafts |
 
@@ -83,21 +83,24 @@ implemented external verification process.
 
 ```mermaid
 flowchart LR
-    Browser[Donor or recipient browser] --> Nginx[nginx on OCI Compute]
+    Browser[Donor or recipient browser] --> Nginx[nginx with HTTPS on OCI Compute]
     Nginx --> App[Next.js on Node.js / PM2]
     App --> API[Session checks and API handlers]
     API --> Rules[Validation and business logic]
     Rules --> Pool[mysql2 connection pool]
-    Pool --> DB[(MySQL HeatWave)]
+    Pool --> DB[(MySQL 8, same server)]
     DB --> Pool
     API --> Browser
 ```
 
-nginx receives public HTTP traffic and forwards it to Next.js on port 3000.
-The application connects to MySQL over private networking; the browser never
-connects directly to the database. Database credentials come from server-side
-environment variables. The pool reuses up to five connections per application
-pool. OCI Generative AI is not part of the current request path.
+nginx receives public HTTPS traffic on port 443 using a Let's Encrypt certificate
+(port 80 redirects to HTTPS) and forwards it to Next.js on port 3000. MySQL runs
+on the same server and accepts only local connections; the browser never connects
+directly to the database. The application's database user can read and write rows
+but cannot change the schema; migrations run under a separate admin account.
+Database credentials come from server-side environment variables. The pool reuses
+up to five connections. The database is backed up nightly. OCI Generative AI is
+not part of the current request path.
 
 The core data model is:
 
@@ -173,8 +176,8 @@ There is no implemented `/api/extract` endpoint yet. Response contracts are in
 Use Node.js 24 to match CI.
 
 ```bash
-git clone https://github.com/brenthippler-art/hacktn-starter.git
-cd hacktn-starter
+git clone https://github.com/brenthippler-art/FeedForward.git
+cd FeedForward
 npm ci
 ```
 
@@ -187,11 +190,12 @@ DB_PASSWORD=
 DB_NAME=hacktn
 ```
 
-The private OCI database is not directly reachable from an ordinary local laptop.
-Use an appropriately configured secure connection or a separate local MySQL
-instance with the required schema and migrations. See [database setup](database/README.md)
-and [db/schema.sql](db/schema.sql). Do not run schema or seed scripts against a
-shared database without coordinating with the team; `db/seed.ts` resets data.
+The production database runs on the application server and accepts only local
+connections, so it is not reachable from a laptop. For local development, use a
+separate local MySQL instance with the required schema and migrations. See
+[database setup](database/README.md) and [db/schema.sql](db/schema.sql). Do not
+run schema or seed scripts against the production database without coordinating
+with the team; `db/seed.ts` resets data.
 
 ```bash
 npm run dev
@@ -226,16 +230,17 @@ post → reserve → collect → impact workflow on the live deployment.
 
 ## Deployment
 
-On the existing OCI application server, the team's server-local helper is:
+On the OCI application server, the deploy helper is:
 
 ```bash
-~/hacktn-starter/deploy.sh
+~/deploy.sh
 ```
 
-It pulls updates, installs dependencies, builds the application, and restarts its
-PM2 process. The helper is not tracked in this repository. A fresh deployment needs
-nginx, PM2, environment variables, and private database connectivity configured.
-Database migrations are explicit operations, not automatic application-startup work.
+It pulls updates from `main`, installs dependencies, builds the application, and
+restarts its PM2 process, stopping before the restart if any step fails. The helper
+is not tracked in this repository. A fresh deployment needs Node.js, nginx, PM2,
+MySQL, environment variables, and a TLS certificate configured. Database migrations
+are explicit operations run with the admin account, not automatic startup work.
 
 ## Next steps
 
