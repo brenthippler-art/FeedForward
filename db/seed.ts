@@ -133,12 +133,12 @@ async function main() {
       orgId: 14,
       orgName: 'Last Call Compost',
       streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37210',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42101',
       contactName: 'Demo Recipient',
       contactEmail: 'compost@example.com',
-      contactPhone: '615-555-0114',
+      contactPhone: '270-555-0114',
     },
   ]);
 
