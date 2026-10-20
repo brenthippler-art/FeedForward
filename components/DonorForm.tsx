@@ -708,16 +708,6 @@ export default function DonorForm() {
             {message}
           </p>
         )}
-        {message && (
-          <p
-            ref={messageRef}
-            tabIndex={-1}
-            role="status"
-            className="rounded-xl border border-brand bg-verified-tint p-4 font-semibold text-brand-dark"
-          >
-            {message}
-          </p>
-        )}
         {surveyReady && <SurveyPrompt kind="donor" />}
         {postError && (
           <p

@@ -243,16 +243,6 @@ export default function RecipientListings() {
           {message}
         </p>
       )}
-      {message && (
-        <p
-          ref={messageRef}
-          tabIndex={-1}
-          role="status"
-          className="rounded-xl border border-brand bg-verified-tint p-4 font-semibold text-brand-dark"
-        >
-          {message}
-        </p>
-      )}
       {surveyReady && <SurveyPrompt kind="recipient" />}
       {bookingError && (
         <p
