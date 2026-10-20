@@ -10,6 +10,7 @@ import {
 } from "@/lib/listing-input";
 import { formatPickupDateTime } from "@/lib/format";
 import TierBadge from "./TierBadge";
+import SurveyPrompt from "./SurveyPrompt";
 import Link from "next/link";
 
 type EditableItem = {
@@ -85,7 +86,7 @@ function Field({
 
 export default function DonorForm() {
   const [drafts, setDrafts] = useState<EditableItem[]>([]);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -94,6 +95,7 @@ export default function DonorForm() {
   const [uncertain, setUncertain] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [surveyReady, setSurveyReady] = useState(false);
   const [message, setMessage] = useState("");
   const [postError, setPostError] = useState("");
   const messageRef = useRef<HTMLParagraphElement>(null);
@@ -185,7 +187,7 @@ export default function DonorForm() {
       tier: draft.tier,
     }));
   }
- 
+
   async function draftWithAI() {
     setDrafting(true);
     setAiError("");
@@ -301,6 +303,7 @@ export default function DonorForm() {
       setMessage(
         `Posted ${data.length} item${data.length === 1 ? "" : "s"}. Eligible recipients can now find your food.`,
       );
+      setSurveyReady(true);
       setDrafts([]);
       setConfirmed(false);
     } catch (error) {
@@ -375,7 +378,9 @@ export default function DonorForm() {
               onClick={draftWithAI}
               className="min-h-12 self-start rounded-lg border border-brand px-5 font-bold text-brand disabled:opacity-50"
             >
-                          {drafting ? "Drafting… this can take up to 30 seconds" : "Draft listings with AI"}
+              {drafting
+                ? "Drafting… this can take up to 30 seconds"
+                : "Draft listings with AI"}
             </button>
             {aiError && (
               <p role="alert" className="text-sm font-bold text-warn-text">
@@ -407,7 +412,6 @@ export default function DonorForm() {
             >
               Add food item manually
             </button>
-            
           </div>
           {drafts.map((draft, index) => {
             const field = (name: string) => {
@@ -704,6 +708,17 @@ export default function DonorForm() {
             {message}
           </p>
         )}
+        {message && (
+          <p
+            ref={messageRef}
+            tabIndex={-1}
+            role="status"
+            className="rounded-xl border border-brand bg-verified-tint p-4 font-semibold text-brand-dark"
+          >
+            {message}
+          </p>
+        )}
+        {surveyReady && <SurveyPrompt kind="donor" />}
         {postError && (
           <p
             ref={errorRef}

@@ -8,6 +8,7 @@ import type { RecipientReservation } from "@/lib/recipient-claims";
 import { formatPickupDateTime } from "@/lib/format";
 import AvailableCard from "./AvailableCard";
 import PickupCard from "./PickupCard";
+import SurveyPrompt from "./SurveyPrompt";
 import Link from "next/link";
 
 type Resource<T> = { data: T[]; loading: boolean; error: string | null };
@@ -33,6 +34,7 @@ export default function RecipientListings() {
   const bookingInFlight = useRef(false);
   const [message, setMessage] = useState("");
   const [bookingError, setBookingError] = useState("");
+  const [surveyReady, setSurveyReady] = useState(false);
 
   const messageRef = useRef<HTMLParagraphElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
@@ -132,6 +134,7 @@ export default function RecipientListings() {
       setMessage(
         `Reserved ${listing.item} for ${formatPickupDateTime(claim.pickupTime)}.`,
       );
+      setSurveyReady(true);
     } catch (error) {
       setBookingError(
         error instanceof Error && !(error instanceof TypeError)
@@ -183,6 +186,7 @@ export default function RecipientListings() {
       setMessage(
         `Pickup recorded: ${pickup.actualLbs} lbs. View the impact dashboard for updated totals.`,
       );
+      setSurveyReady(true);
     } catch (error) {
       const uncertain =
         status === null || status >= 500 || (status >= 200 && status < 300);
@@ -239,6 +243,17 @@ export default function RecipientListings() {
           {message}
         </p>
       )}
+      {message && (
+        <p
+          ref={messageRef}
+          tabIndex={-1}
+          role="status"
+          className="rounded-xl border border-brand bg-verified-tint p-4 font-semibold text-brand-dark"
+        >
+          {message}
+        </p>
+      )}
+      {surveyReady && <SurveyPrompt kind="recipient" />}
       {bookingError && (
         <p
           ref={errorRef}

@@ -42,7 +42,7 @@ export default async function SiteHeader() {
               </form>
             </div>
           </div>
-                ) : (
+        ) : (
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/survey"
@@ -56,6 +56,22 @@ export default async function SiteHeader() {
           </div>
         )}
       </div>
+
+      {user && (
+        <div className="bg-warn-tint text-warn-text">
+          <p className="mx-auto max-w-[1200px] px-6 py-2 text-sm">
+            <strong>Shared demo:</strong> sample organizations and sample food.
+            Other visitors may be trying it too, and everything resets nightly.
+            Nothing here is a real donation.{" "}
+            <Link
+              href="/survey"
+              className="font-bold underline underline-offset-2 hover:no-underline"
+            >
+              Take the survey
+            </Link>
+          </p>
+        </div>
+      )}
     </header>
   );
 }
