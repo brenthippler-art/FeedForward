@@ -3,8 +3,10 @@
 Route surplus food to its best use: **people first, then farms, then compost.**
 Built at HackTN 2026 in Nashville for Challenge #1: *From Surplus to Social Good.*
 
-FeedForward is a working food-recovery prototype: institutions post surplus,
-community organizations reserve eligible food, and completed pickups feed a
+FeedForward is a working food-recovery prototype, now being tested with
+restaurants and recipient organizations in Bowling Green and South Central
+Kentucky. Kitchens describe surplus in plain words and AI drafts the listings;
+community organizations reserve eligible food; completed pickups feed a
 database-backed impact dashboard.
 
 **Live demo:** https://feedforward.brentoncodes.dev
@@ -32,27 +34,28 @@ and records the handoff, rather than counting an offer as a completed donation.
 | Reservations | Whole-listing bookings with saved history and duplicate protection |
 | Pickup confirmation | Actual weight recording, recipient ownership checks, and inventory updates |
 | Impact reporting | Completed pickup counts, weight by destination, recent history, and estimated meals from people-tier pounds |
-| AI draft preview | Clearly labeled, editable sample drafts; it does not process the description or call OCI Generative AI |
+| AI listing drafts | A donor's plain-language description becomes editable draft listings through Google's Gemini API with a JSON response schema; FeedForward's own rules suggest each item's destination, and the donor confirms every field before posting |
+| Pilot surveys | Separate donor and recipient surveys with follow-up questions; each response is validated and emailed to the team, and nothing is stored on the server |
 
-**Demo scope:** sign-in selects a predefined organization; it is not production
-authentication. The live database was reset after the hackathon, so any listings
-and dashboard totals are test entries, not verified community impact. Live OCI
-Generative AI extraction and production authentication remain future work.
-Ratings are a coming-soon preview.
+**Demo scope:** sign-in selects a predefined Bowling Green demo organization; it
+is not production authentication. Any listings and dashboard totals are test
+entries, not verified community impact. Production authentication remains future
+work. Ratings are a coming-soon preview.
 
 ## How it works
 
-1. A donor enters food details manually or loads sample drafts from the AI-workflow preview.
-2. The donor chooses a destination: **1 · People**, **2 · Animals**, or **3 · Compost**.
+1. A donor describes tonight's surplus in plain words, or adds items by hand. Gemini drafts a listing for each food: name, quantity, estimated weight, condition, category, and whether it contains meat.
+2. FeedForward's tier rules suggest a destination for each item: **1 · People**, **2 · Animals**, or **3 · Compost**. The donor can change it.
 3. Server-side validation checks the details and rejects incompatible choices, such as meat-containing items for animal feed. The donor reviews and confirms before saving.
 4. The donor can view suggested recipients for a saved listing. Recipients see food permitted by their own acceptance rules, with bookable pickup times.
 5. A recipient reserves the entire listing. The reservation persists after refresh, and the food is hidden from other recipients.
 6. At collection, the recipient confirms actual weight. The backend records completion, the database updates inventory, and the impact dashboard reads the saved results.
 
-**Trust principle:** explicit rules and human review govern the handoff. The
-planned AI integration will assist with drafting; it will not certify food safety.
-Suggested recipients are registered demo organizations, not evidence of an
-implemented external verification process.
+**Trust principle:** the AI only describes the food. Explicit rules suggest where
+it goes, server-side validation checks every field, and the donor confirms before
+anything is saved. The AI never certifies food safety. Suggested recipients are
+registered demo organizations, not evidence of an implemented external
+verification process.
 
 ## Team
 
@@ -63,6 +66,13 @@ implemented external verification process.
 | Hacker / Hipster: Backend APIs, frontend integration, and testing | Manas Tiwari |
 | Hacker: Frontend, design, and deployment | Brenton Hippler |
 | Hacker: Database and backend | Niranjan Sharma |
+
+**Who built what:** all code through October 18, 2026, the end of HackTN26, was
+built by the team above. Since October 19, the code has been edited, updated and
+extended by Brenton Hippler, including the move to Oracle Cloud's Always Free tier
+with HTTPS, the pilot surveys, AI listing drafts with Gemini, and the Bowling Green
+localization. Manas Tiwari also contributed README updates after the hackathon.
+The commit history shows the details.
 
 ## Technology stack
 
@@ -77,7 +87,8 @@ implemented external verification process.
 | OCI deployment | OCI Always Free Ampere A1 Compute (ARM) running Oracle Linux 9, nginx reverse proxy with Let's Encrypt HTTPS, and PM2 process management |
 | Persistence | MySQL 8.0 on the application server, accepting local connections only, with nightly backups |
 | Quality checks | Node.js test runner, ESLint, TypeScript, and GitHub Actions |
-| Planned AI | OCI Generative AI for structured extraction into editable drafts |
+| AI | Google Gemini API (`gemini-3.5-flash-lite`, free tier) with structured JSON output for listing drafts; the model is set by environment variable |
+| Email | Nodemailer over Gmail SMTP for survey responses |
 
 ## Architecture and data flow
 
@@ -89,6 +100,8 @@ flowchart LR
     API --> Rules[Validation and business logic]
     Rules --> Pool[mysql2 connection pool]
     Pool --> DB[(MySQL 8, same server)]
+    Rules --> Gemini[Google Gemini API]
+    Rules --> Mail[Gmail SMTP]
     DB --> Pool
     API --> Browser
 ```
@@ -99,8 +112,10 @@ on the same server and accepts only local connections; the browser never connect
 directly to the database. The application's database user can read and write rows
 but cannot change the schema; migrations run under a separate admin account.
 Database credentials come from server-side environment variables. The pool reuses
-up to five connections. The database is backed up nightly. OCI Generative AI is
-not part of the current request path.
+up to five connections. The database is backed up nightly. Listing drafts call
+the Gemini API from the server with a 30-second timeout; the API key stays in
+server-side environment variables. Survey responses are sent by email through
+Gmail SMTP and are not written to the database or logs.
 
 The core data model is:
 
@@ -145,6 +160,15 @@ Recipient preferences live in `AcceptedTier`, `RefusedCategory`, and
   attempt instead of automatically repeating a POST that may already have committed.
 - **Shared contracts:** TypeScript types connect API responses and frontend
   components, while runtime validation checks untrusted request bodies.
+- **AI drafts, rules decide:** Gemini returns structured facts about each food,
+  never a destination. `lib/tiers.ts` applies the EPA Wasted Food Scale: edible
+  food goes to people unless cooked food has been out over two hours; plant-based
+  scraps go to animals, never pigs; anything with meat goes to compost.
+  `lib/extract.ts` validates every returned field, treats unsure meat as meat,
+  and leaves unknown weights and conditions blank for the donor.
+- **Rate limits:** AI drafting allows 10 requests per hour per visitor and 400 per
+  day site-wide, under Gemini's free limit of 500. Surveys allow 5 per hour per
+  visitor, with a honeypot field for bots.
 
 ## API
 
@@ -158,16 +182,18 @@ Recipient preferences live in `AcceptedTier`, `RefusedCategory`, and
 | `POST /api/pickups` | `{ claimId, actualLbs }`; reservation owner | Completed pickup with recorded weight |
 | `GET /api/impact` | Recipient-specific or platform scope derived from session | Totals, destination breakdown, estimated meals, and recent pickups |
 | `GET /api/health` | Connectivity check | Database availability |
-
+| `POST /api/extract` | `{ text }`, up to 3,000 characters; signed-in donor | Draft listings with suggested tiers (not saved) |
+| `POST /api/survey` | `{ kind: "donor" \| "recipient", answers }` | Validated response emailed to the team; nothing stored |
 
 Operational responses use `Cache-Control: no-store`. Errors return JSON with an
 `error` message and relevant status: 400 invalid input, 401 signed out, 403 denied,
 404 missing reservation/listing, 409 conflict or unavailable completion, or 503
 unexpected operational/database failure. The health endpoint uses 500 on failure.
 
-There is no implemented `/api/extract` endpoint yet. Response contracts are in
+Response contracts are in
 [types/index.ts](types/index.ts); policy logic is in
 [lib/listing-input.ts](lib/listing-input.ts),
+[lib/tiers.ts](lib/tiers.ts),
 [lib/claim-policy.ts](lib/claim-policy.ts), and
 [lib/pickup-policy.ts](lib/pickup-policy.ts).
 
@@ -188,6 +214,15 @@ DB_HOST=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=hacktn
+
+# AI listing drafts (Google AI Studio key, no billing account)
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.5-flash-lite
+
+# Survey email (Gmail app password)
+SMTP_USER=
+SMTP_PASS=
+SURVEY_TO=
 ```
 
 The production database runs on the application server and accepts only local
@@ -201,9 +236,9 @@ with the team; `db/seed.ts` resets data.
 npm run dev
 ```
 
-Open http://localhost:3000. The sample draft preview works without OCI AI, but
-listings, reservations, pickups, and impact require a database connection. They
-do not silently fall back to mock data when database requests fail.
+Open http://localhost:3000. AI drafting and the surveys work without a database
+once their keys are set. Listings, reservations, pickups, and impact require a
+database connection and do not fall back to mock data when database requests fail.
 
 ## Testing and accessibility
 
@@ -244,8 +279,8 @@ are explicit operations run with the admin account, not automatic startup work.
 
 ## Next steps
 
-- Connect OCI Generative AI to the draft-review workflow, with validated outputs
-  and manual entry retained as a fallback.
+- Draft listings from a photo of surplus food, using the same Gemini model and validation.
+- Reset demo data nightly and add a demo banner for survey participants.
 - Replace demo sign-in with production authentication and organization onboarding.
 - Implement recipient verification and the currently preview-only ratings flow.
 - Add cancellation and listing lifecycle changes with matching database rules.
