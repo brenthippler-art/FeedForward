@@ -21,7 +21,7 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://163.192.109.118"),
+  metadataBase: new URL("https://feedforward.brentoncodes.dev"),
   title: {
     default: "FeedForward: Route surplus food to its best use",
     template: "%s · FeedForward",

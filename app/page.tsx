@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { demoUsers } from "@/lib/demo-users";
 import { signIn } from "@/app/actions/session";
 import { Suspense } from "react";
@@ -57,7 +58,7 @@ export default function Home() {
       </Suspense>
       {/* Hero */}
       <section aria-labelledby="hero-heading" className="relative">
-        <div className="grid h-[520px] grid-cols-3 sm:h-[600px]">
+        <div className="grid h-[560px] grid-cols-3 sm:h-[600px]">
           {heroImages.map((img, index) => (
             <div key={img.src} className="relative overflow-hidden">
               <Image
@@ -79,7 +80,7 @@ export default function Home() {
         <div className="absolute inset-x-0 top-0 flex justify-center px-4">
           <div className="flex w-full max-w-3xl flex-col items-center gap-5 rounded-b-2xl bg-brand/85 px-6 py-8 text-center text-white sm:px-10 sm:py-10">
             <p className="text-xs font-bold uppercase tracking-widest text-white/85 sm:text-sm">
-              HackTN26 · From Surplus to Social Good
+              From Surplus to Social Good
             </p>
             <h1
               id="hero-heading"
@@ -91,7 +92,7 @@ export default function Home() {
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">
               FeedForward routes tonight&apos;s kitchen leftovers to their best
-              use: people first, then farms, then compost.
+              use: <br />people first, then farms, then compost.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <SignInLink className="inline-flex min-h-12 items-center rounded-full bg-surface px-7 font-bold uppercase tracking-wide text-brand hover:bg-ground">
@@ -101,6 +102,15 @@ export default function Home() {
                 I&apos;m receiving food
               </SignInLink>
             </div>
+            <p className="text-sm text-white/90 sm:text-base">
+              Run a kitchen, pantry or farm in Bowling Green?{" "}
+              <Link
+                href="/survey"
+                className="font-bold text-white underline underline-offset-4 hover:no-underline"
+              >
+                Take our 5-minute survey
+              </Link>
+            </p>
           </div>
         </div>
       </section>
@@ -151,7 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-     <BestUse />
+      <BestUse />
 
       {/* Membership */}
       <Membership />
