@@ -40,7 +40,7 @@ Neither endpoint certifies food safety.
 
 ## Verify on the OCI-connected application
 
-1. Open `/database-check` and confirm the mixed-case tables can be read.
+1. Open `/api/health` and confirm it returns `ok: true`, then confirm the tables from the MySQL prompt with `SHOW TABLES;`.
 2. Ensure at least one Item has positive quantity, item_name, unit, ready_at,
    a future safe_until when applicable, and no Claim. Existing rows need real
    donor-provided details filled in after migration.
