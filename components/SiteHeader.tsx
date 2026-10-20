@@ -42,10 +42,18 @@ export default async function SiteHeader() {
               </form>
             </div>
           </div>
-        ) : (
-          <SignInLink className="inline-flex min-h-11 items-center rounded-full bg-surface px-5 font-bold text-brand hover:bg-ground">
-            Try the demo
-          </SignInLink>
+                ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/survey"
+              className="inline-flex min-h-11 items-center rounded-full border-2 border-white px-5 font-bold text-white hover:bg-white/10"
+            >
+              Take the survey
+            </Link>
+            <SignInLink className="inline-flex min-h-11 items-center rounded-full bg-surface px-5 font-bold text-brand hover:bg-ground">
+              Try the demo
+            </SignInLink>
+          </div>
         )}
       </div>
     </header>
