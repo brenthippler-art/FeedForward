@@ -1,10 +1,13 @@
-// Approximate zip-code centroids for the Nashville-area zips currently in use.
+// Approximate zip-code centroids for the Bowling Green-area zips used by the demo.
 // These are general-knowledge approximations, not from a verified geocoding
 // service — good enough for sorting matches by rough distance, not for anything
 // safety- or precision-critical. No geocoding API is configured for this app.
 const ZIP_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  '42101': { lat: 39.993449, lng: -86.441620 }, // Downtown
-  '42104': { lat: 39.909461, lng: -86.370727 }, // Midtown / Music Row
+  '42101': { lat: 37.03, lng: -86.47 }, // Bowling Green, downtown and north
+  '42103': { lat: 36.96, lng: -86.39 }, // Bowling Green, east
+  '42104': { lat: 36.90, lng: -86.45 }, // Bowling Green, south
+  '42122': { lat: 36.87, lng: -86.34 }, // Alvaton
+  '42171': { lat: 37.05, lng: -86.21 }, // Smiths Grove
 };
 
 export function zipCoordinates(zip: string): { lat: number; lng: number } | null {

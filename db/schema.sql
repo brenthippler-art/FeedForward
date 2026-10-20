@@ -62,7 +62,7 @@ CREATE TABLE Item (
     -- in types/index.ts.
     item_name     VARCHAR(200),
     unit          VARCHAR(50),
-    condition     VARCHAR(500),
+    `condition`     VARCHAR(500),
     contains_meat TINYINT,
     hours_out     DECIMAL(6,2),
     tier_reason   VARCHAR(500),
