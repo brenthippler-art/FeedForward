@@ -132,11 +132,11 @@ async function main() {
     {
       orgId: 14,
       orgName: 'Last Call Compost',
-      streetAddress: 'Sample address',
+      streetAddress: '1 Compost Way',
       city: 'Bowling Green',
       state: 'KY',
       zipCode: '42101',
-      contactName: 'Demo Recipient',
+      contactName: 'Fred Sandford',
       contactEmail: 'compost@example.com',
       contactPhone: '270-555-0114',
     },
