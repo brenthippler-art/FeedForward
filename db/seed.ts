@@ -84,49 +84,49 @@ async function main() {
   console.log('Wiped existing data (kept demo rows: org 1/11, Item 1, AcceptedTier 11/1)');
 
   // 1. Organization (2, 3, 12-14; 1 and 11 are preserved, untouched)
-  await db.insert(organization).values([
+    await db.insert(organization).values([
     {
       orgId: 2,
-      orgName: 'Hiilltop Dining Hall',
-      streetAddress: 'Sample address',
+      orgName: 'Hilltop Dining Hall',
+      streetAddress: '1500 Hill Street',
       city: 'Bowling Green',
       state: 'KY',
       zipCode: '42101',
-      contactName: 'Jimmy Dean',
-      contactEmail: 'dining@example.com',
+      contactName: 'Angela Moore',
+      contactEmail: 'dining@hilltop.example',
       contactPhone: '270-555-0102',
     },
     {
       orgId: 3,
       orgName: 'Warren Regional Hospital',
-      streetAddress: '1 Hospital Way',
+      streetAddress: '800 Regional Way',
       city: 'Bowling Green',
       state: 'KY',
-      zipCode: '42101',
-      contactName: 'Florence Nightingale',
-      contactEmail: 'hospital@example.com',
+      zipCode: '42103',
+      contactName: 'Priya Shah',
+      contactEmail: 'cafeteria@warrenregional.example',
       contactPhone: '270-555-0103',
     },
     {
       orgId: 12,
-      orgName: 'Porch LightSupper Table',
-      streetAddress: '1 Porch Light',
+      orgName: 'Porch Light Supper Table',
+      streetAddress: '312 Lantern Street',
       city: 'Bowling Green',
       state: 'KY',
-      zipCode: '42101',
-      contactName: 'Demo Recipient',
-      contactEmail: 'shelter@example.com',
+      zipCode: '42104',
+      contactName: 'Marcus Webb',
+      contactEmail: 'kitchen@porchlightsupper.example',
       contactPhone: '270-555-0112',
     },
     {
       orgId: 13,
       orgName: 'Drakes Creek Goat & Garden',
-      streetAddress: '123456 Old Scottsville Rd',
-      city: 'Alvaton',
+      streetAddress: '9100 Creekbend Road',
+      city: 'Bowling Green',
       state: 'KY',
       zipCode: '42104',
-      contactName: 'Joel Salatin',
-      contactEmail: 'farm@example.com',
+      contactName: 'Jo Hollis',
+      contactEmail: 'hello@drakescreekgoat.example',
       contactPhone: '270-555-0113',
     },
     {
@@ -136,7 +136,7 @@ async function main() {
       city: 'Bowling Green',
       state: 'KY',
       zipCode: '42101',
-      contactName: 'Fred Sandford',
+      contactName: 'Fred Sanford',
       contactEmail: 'compost@example.com',
       contactPhone: '270-555-0114',
     },
@@ -332,13 +332,14 @@ async function main() {
     { recipientId: 13, categoryId: categoryId['bakery'] }, // farm: no sugary baked goods for livestock
   ]);
 
-  await db.insert(acceptanceRule).values([
-    { recipientId: 11, dayOfWeek: 'Mon', pickupStart: '08:00:00', pickupEnd: '14:00:00' },
-    { recipientId: 11, dayOfWeek: 'Thu', pickupStart: '08:00:00', pickupEnd: '14:00:00' },
-    { recipientId: 12, dayOfWeek: 'Tue', pickupStart: '09:00:00', pickupEnd: '17:00:00' },
-    { recipientId: 13, dayOfWeek: 'Fri', pickupStart: '07:00:00', pickupEnd: '11:00:00' },
-    { recipientId: 14, dayOfWeek: 'Sun', pickupStart: '00:00:00', pickupEnd: '00:00:00' }, // 24-hour drop-off
-  ]);
+  // Every recipient accepts pickups all day, every day, so the shared demo works at any hour.
+  // Equal start and end times mean a full 24-hour window (see lib/claim-policy.ts).
+  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  await db.insert(acceptanceRule).values(
+    [11, 12, 13, 14].flatMap((recipientId) =>
+      DAYS.map((dayOfWeek) => ({ recipientId, dayOfWeek, pickupStart: '00:00:00', pickupEnd: '00:00:00' })),
+    ),
+  );
   console.log('Seeded AcceptedTier, RefusedCategory, AcceptanceRule');
 
   // 6. Claim (recipient 11 reserves the milk cartons)
