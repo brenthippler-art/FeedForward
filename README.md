@@ -158,7 +158,7 @@ Recipient preferences live in `AcceptedTier`, `RefusedCategory`, and
 | `POST /api/pickups` | `{ claimId, actualLbs }`; reservation owner | Completed pickup with recorded weight |
 | `GET /api/impact` | Recipient-specific or platform scope derived from session | Totals, destination breakdown, estimated meals, and recent pickups |
 | `GET /api/health` | Connectivity check | Database availability |
-| `GET /api/database-check` | Diagnostic table check | Selected table counts and categories |
+
 
 Operational responses use `Cache-Control: no-store`. Errors return JSON with an
 `error` message and relevant status: 400 invalid input, 401 signed out, 403 denied,
