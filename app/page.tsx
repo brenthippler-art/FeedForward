@@ -20,7 +20,7 @@ const steps = [
   },
   {
     title: "AI drafts it",
-    body: "OCI Generative AI turns it into listings. Our rules suggest each item’s tier.",
+    body: "Google’s Gemini AI turns it into listings. Our rules suggest where each item goes.",
   },
   {
     title: "Confirm it",
@@ -92,7 +92,8 @@ export default function Home() {
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">
               FeedForward routes tonight&apos;s kitchen leftovers to their best
-              use: <br />people first, then farms, then compost.
+              use: <br />
+              people first, then farms, then compost.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <SignInLink className="inline-flex min-h-12 items-center rounded-full bg-surface px-7 font-bold uppercase tracking-wide text-brand hover:bg-ground">
