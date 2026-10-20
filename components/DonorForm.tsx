@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import type { FoodCategory, Tier } from "@/types";
+import type { DraftListing, FoodCategory, Tier } from "@/types";
 import type { PostedListing } from "@/lib/donor-listings";
 import {
   FOOD_CATEGORIES,
@@ -86,13 +86,17 @@ function Field({
 
 export default function DonorForm() {
   const [drafts, setDrafts] = useState<EditableItem[]>([]);
-  const [description, setDescription] = useState('About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.');
+  const [description, setDescription] = useState(
+    "About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch service, and a bucket of potato peels.",
+  );
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const nextItemKey = useRef(0);
   const [uncertain, setUncertain] = useState(false);
+  const [drafting, setDrafting] = useState(false);
+  const [aiError, setAiError] = useState("");
   const [message, setMessage] = useState("");
   const [postError, setPostError] = useState("");
   const messageRef = useRef<HTMLParagraphElement>(null);
@@ -165,29 +169,71 @@ export default function DonorForm() {
     setConfirmed(false);
     setMessage("");
   }
+
+  // Turn drafts (from the AI or the samples) into editable form items
+  function toEditable(list: DraftListing[]) {
+    return list.map((draft) => ({
+      ...createItem(),
+      item: draft.item,
+      quantity: String(draft.quantity),
+      unit: draft.unit,
+      unitWeight:
+        draft.estimatedLbs === null
+          ? ""
+          : (draft.estimatedLbs / draft.quantity).toFixed(2),
+      condition: draft.condition === "unknown" ? "" : draft.condition,
+      category: draft.category,
+      containsMeat: draft.containsMeat,
+      hoursOut: draft.hoursOut === null ? "" : String(draft.hoursOut),
+      tier: draft.tier,
+    }));
+  }
   function loadSamples() {
-    setDrafts(
-      mockDrafts.map((draft) => ({
-        ...createItem(),
-        item: draft.item,
-        quantity: String(draft.quantity),
-        unit: draft.unit,
-        unitWeight:
-          draft.estimatedLbs === null
-            ? ""
-            : (draft.estimatedLbs / draft.quantity).toFixed(2),
-        condition: draft.condition,
-        category: draft.category,
-        containsMeat: draft.containsMeat,
-        hoursOut: draft.hoursOut === null ? "" : String(draft.hoursOut),
-        tier: draft.tier,
-      })),
-    );
+    setDrafts(toEditable(mockDrafts));
     setConfirmed(false);
     setErrors({});
     setPostError("");
     setMessage("");
   }
+  async function draftWithAI() {
+    setDrafting(true);
+    setAiError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: description }),
+      });
+      const data: unknown = await response.json().catch(() => null);
+      if (!response.ok || !Array.isArray(data)) {
+        const error =
+          data &&
+          typeof data === "object" &&
+          "error" in data &&
+          typeof data.error === "string"
+            ? data.error
+            : "The AI couldn’t draft listings this time. Try again, or add items by hand.";
+        throw new Error(error);
+      }
+      setDrafts(toEditable(data as DraftListing[]));
+      setConfirmed(false);
+      setErrors({});
+      setPostError("");
+      setMessage(
+        `Drafted ${data.length} item${data.length === 1 ? "" : "s"}. Check each one’s weight, condition and destination, and enter pickup times before posting.`,
+      );
+    } catch (error) {
+      setAiError(
+        error instanceof Error
+          ? error.message
+          : "The AI couldn’t draft listings this time. Try again, or add items by hand.",
+      );
+    } finally {
+      setDrafting(false);
+    }
+  }
+
   function focusError(fields: Record<string, string>) {
     const key = Object.keys(fields)[0];
     const parts = key?.split(".");
@@ -299,22 +345,62 @@ export default function DonorForm() {
             </h2>
           </legend>
 
-        <section aria-labelledby="ai-preview-heading" className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 id="ai-preview-heading" className="font-display text-xl font-semibold">Describe your surplus</h2>
-            <span className="rounded-full bg-warn-tint px-3 py-1 text-sm font-bold text-warn-text">AI preview · sample data</span>
-          </div>
-          <label htmlFor="surplus-description" className="font-semibold">What’s left in your kitchen?</label>
-          <textarea id="surplus-description" rows={4} maxLength={3000} value={description}
-            onChange={(event) => setDescription(event.target.value)} aria-describedby="ai-preview-note"
-            className="w-full min-w-0 resize-y rounded-lg border border-field p-3 text-base" />
-          <p id="ai-preview-note" className="text-sm text-muted">Prototype preview: this loads fixed sample drafts, not results extracted from your description. OCI Generative AI integration is planned.</p>
-          <button type="button" disabled={!description.trim() || drafts.length > 0}
-            onClick={() => { loadSamples(); setMessage('Sample drafts loaded. Review each item, confirm weights, and enter pickup availability before posting. No OCI AI request was made.'); }}
-            className="min-h-12 self-start rounded-lg border border-brand px-5 font-bold text-brand disabled:opacity-50">Preview AI drafts (sample)</button>
-          {drafts.length > 0 && <p className="text-sm text-muted">Remove the current draft items to load another preview. You can edit them below or add items manually.</p>}
-          <p className="text-sm text-muted">Nothing is posted until you review and confirm.</p>
-        </section>
+          <section
+            aria-labelledby="ai-preview-heading"
+            className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line bg-surface p-5"
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <h2
+                id="ai-preview-heading"
+                className="font-display text-xl font-semibold"
+              >
+                Describe your surplus
+              </h2>
+              <span className="rounded-full bg-verified-tint px-3 py-1 text-sm font-bold text-brand">
+                AI drafts · you confirm
+              </span>
+            </div>
+            <label htmlFor="surplus-description" className="font-semibold">
+              What’s left in your kitchen?
+            </label>
+            <textarea
+              id="surplus-description"
+              rows={4}
+              maxLength={3000}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              aria-describedby="ai-note"
+              className="w-full min-w-0 resize-y rounded-lg border border-field p-3 text-base"
+            />
+            <p id="ai-note" className="text-sm text-muted">
+              Describe it the way you’d tell a coworker. FeedForward sends this
+              description to Google’s Gemini AI to draft your listings, so leave
+              out names and personal details.
+            </p>
+            <button
+              type="button"
+              disabled={!description.trim() || drafts.length > 0 || drafting}
+              onClick={draftWithAI}
+              className="min-h-12 self-start rounded-lg border border-brand px-5 font-bold text-brand disabled:opacity-50"
+            >
+                          {drafting ? "Drafting… this can take up to 30 seconds" : "Draft listings with AI"}
+            </button>
+            {aiError && (
+              <p role="alert" className="text-sm font-bold text-warn-text">
+                {aiError}
+              </p>
+            )}
+            {drafts.length > 0 && (
+              <p className="text-sm text-muted">
+                Remove the current draft items to draft again. You can edit them
+                below or add items manually.
+              </p>
+            )}
+            <p className="text-sm text-muted">
+              The AI describes the food. FeedForward’s rules suggest where it
+              goes, and nothing is posted until you review and confirm.
+            </p>
+          </section>
 
           <p className="text-muted">
             Enter each item and review its destination and pickup availability
@@ -712,13 +798,17 @@ export default function DonorForm() {
                     ? "Reserved"
                     : "Posted"}
               </p>
-                            {listing.status !== "available" && listing.claimedBy && (
+              {listing.status !== "available" && listing.claimedBy && (
                 <div className="flex flex-col gap-1 rounded-lg bg-ground p-3 text-sm">
                   <p>
                     <span className="text-muted">
-                      {listing.status === "picked_up" ? "Picked up by" : "Reserved by"}
+                      {listing.status === "picked_up"
+                        ? "Picked up by"
+                        : "Reserved by"}
                     </span>{" "}
-                    <span className="font-semibold">{listing.claimedBy.name}</span>
+                    <span className="font-semibold">
+                      {listing.claimedBy.name}
+                    </span>
                   </p>
                   <p>
                     <span className="text-muted">Pickup:</span>{" "}
@@ -727,17 +817,25 @@ export default function DonorForm() {
                   <details>
                     <summary className="cursor-pointer py-2 font-semibold text-brand underline">
                       Contact details
-                      <span className="sr-only"> for {listing.claimedBy.name}</span>
+                      <span className="sr-only">
+                        {" "}
+                        for {listing.claimedBy.name}
+                      </span>
                     </summary>
                     <dl className="flex flex-col gap-1">
                       <div>
                         <dt className="inline text-muted">Contact: </dt>
-                        <dd className="inline">{listing.claimedBy.contactName}</dd>
+                        <dd className="inline">
+                          {listing.claimedBy.contactName}
+                        </dd>
                       </div>
                       <div>
                         <dt className="inline text-muted">Phone: </dt>
                         <dd className="inline">
-                          <a href={`tel:${listing.claimedBy.phone.replace(/[^\d+]/g, "")}`} className="font-semibold text-brand underline">
+                          <a
+                            href={`tel:${listing.claimedBy.phone.replace(/[^\d+]/g, "")}`}
+                            className="font-semibold text-brand underline"
+                          >
                             {listing.claimedBy.phone}
                           </a>
                         </dd>
@@ -745,7 +843,10 @@ export default function DonorForm() {
                       <div>
                         <dt className="inline text-muted">Email: </dt>
                         <dd className="inline">
-                          <a href={`mailto:${listing.claimedBy.email}`} className="font-semibold text-brand underline">
+                          <a
+                            href={`mailto:${listing.claimedBy.email}`}
+                            className="font-semibold text-brand underline"
+                          >
                             {listing.claimedBy.email}
                           </a>
                         </dd>
