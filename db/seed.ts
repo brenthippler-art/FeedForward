@@ -122,7 +122,7 @@ async function main() {
       orgId: 13,
       orgName: 'Drakes Creek Goat & Garden',
       streetAddress: '123456 Old Scottsville Rd',
-      city: 'Bowling Green',
+      city: 'Alvaton',
       state: 'KY',
       zipCode: '42104',
       contactName: 'Joel Salatin',
@@ -132,13 +132,13 @@ async function main() {
     {
       orgId: 14,
       orgName: 'Last Call Compost',
-      streetAddress: 'Sample address',
-      city: 'Nashville',
-      state: 'TN',
-      zipCode: '37210',
-      contactName: 'Demo Recipient',
+      streetAddress: '1 Compost Way',
+      city: 'Bowling Green',
+      state: 'KY',
+      zipCode: '42101',
+      contactName: 'Fred Sandford',
       contactEmail: 'compost@example.com',
-      contactPhone: '615-555-0114',
+      contactPhone: '270-555-0114',
     },
   ]);
 
