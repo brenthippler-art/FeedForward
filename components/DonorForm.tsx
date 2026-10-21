@@ -368,7 +368,7 @@ export default function DonorForm() {
               className="w-full min-w-0 resize-y rounded-lg border border-field p-3 text-base"
             />
             <p id="ai-note" className="text-sm text-muted">
-              Describe it the way you’d tell a coworker. FeedForward's Smart Draft System drafts your listings, so leave
+              Describe it the way you&apos;d tell a coworker. FeedForward&apos;s Smart Draft System drafts your listings, so leave
               out names and personal details.
             </p>
             <button
@@ -393,14 +393,14 @@ export default function DonorForm() {
               </p>
             )}
             <p className="text-sm text-muted">
-              The app describes the food. FeedForward’s rules suggest where it
+              The app describes the food. FeedForward&apos;s rules suggest where it
               goes, and nothing is posted until you review and confirm.
             </p>
           </section>
 
           <p className="text-muted">
             Enter each item and review its destination and pickup availability
-            before posting. Times use your device’s local time.
+            before posting. Times use your device&apos;s local time.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
