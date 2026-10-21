@@ -63,7 +63,7 @@ export default function WhyItMatters() {
             Much of today&apos;s food rescue comes from grocery stores.
             Restaurants, cafeterias, and caterers have surplus every night but
             no easy way to move it. FeedForward makes it a two-minute task:
-            describe what&apos;s left, check the AI&apos;s draft, and a nearby
+            describe what&apos;s left, check the app&apos;s draft, and a nearby
             pantry or shelter claims it.
           </p>
         </div>

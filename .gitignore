@@ -44,3 +44,4 @@ next-env.d.ts
 /brag-output/*
 !/brag-output/LeftoverLegends.mp4
 !/brag-output/brag.jpg
+brag-output-*/

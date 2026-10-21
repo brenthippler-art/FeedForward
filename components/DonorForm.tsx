@@ -351,7 +351,7 @@ export default function DonorForm() {
                 Describe your surplus
               </h2>
               <span className="rounded-full bg-verified-tint px-3 py-1 text-sm font-bold text-brand">
-                AI drafts · you confirm
+                The app drafts · you confirm
               </span>
             </div>
             <label htmlFor="surplus-description" className="font-semibold">
@@ -368,8 +368,7 @@ export default function DonorForm() {
               className="w-full min-w-0 resize-y rounded-lg border border-field p-3 text-base"
             />
             <p id="ai-note" className="text-sm text-muted">
-              Describe it the way you’d tell a coworker. FeedForward sends this
-              description to Google’s Gemini AI to draft your listings, so leave
+              Describe it the way you&apos;d tell a coworker. FeedForward&apos;s Smart Draft System drafts your listings, so leave
               out names and personal details.
             </p>
             <button
@@ -380,7 +379,7 @@ export default function DonorForm() {
             >
               {drafting
                 ? "Drafting… this can take up to 30 seconds"
-                : "Draft listings with AI"}
+                : "Draft smart listings"}
             </button>
             {aiError && (
               <p role="alert" className="text-sm font-bold text-warn-text">
@@ -394,14 +393,14 @@ export default function DonorForm() {
               </p>
             )}
             <p className="text-sm text-muted">
-              The AI describes the food. FeedForward’s rules suggest where it
+              The app describes the food. FeedForward&apos;s rules suggest where it
               goes, and nothing is posted until you review and confirm.
             </p>
           </section>
 
           <p className="text-muted">
             Enter each item and review its destination and pickup availability
-            before posting. Times use your device’s local time.
+            before posting. Times use your device&apos;s local time.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
