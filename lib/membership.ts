@@ -17,7 +17,7 @@ export const plans: Plan[] = [
     summary: 'Everything you need to start rescuing food today.',
     pickup: 'Recipients pick up from you',
     features: [
-      'Post surplus in plain English; AI drafts the listing in about two minutes',
+      'Post surplus in plain English; the app drafts the listing in about two minutes',
       'Automatic matching to nearby recipients who can use it',
       'USDA-based safety checks and guidance on federal liability protection',
       'Impact dashboard and a shareable summary for your customers',

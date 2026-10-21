@@ -19,8 +19,8 @@ const steps = [
     body: "A kitchen manager types what’s left, the way they’d say it.",
   },
   {
-    title: "AI drafts it",
-    body: "Google’s Gemini AI turns it into listings. Our rules suggest where each item goes.",
+    title: "We drafts it",
+    body: "The app turns it into listings. Our rules suggest where each item goes.",
   },
   {
     title: "Confirm it",
@@ -103,7 +103,7 @@ export default function Home() {
                 I&apos;m receiving food
               </SignInLink>
             </div>
-            <p className="text-sm text-white/90 sm:text-base">
+            <p className="text-base text-white/90 sm:text-base">
               Run a kitchen, pantry or farm in Bowling Green?{" "}
               <Link
                 href="/survey"
@@ -152,7 +152,7 @@ export default function Home() {
             id="trust-heading"
             className="font-display text-[28px] font-bold sm:text-[34px]"
           >
-            The AI drafts. Your rules decide. A person confirms.
+            The app drafts. Your rules decide. A person confirms.
           </h2>
           <p className="max-w-2xl text-lg leading-relaxed text-white/90">
             FeedForward never guesses whether food is safe. Unknown conditions

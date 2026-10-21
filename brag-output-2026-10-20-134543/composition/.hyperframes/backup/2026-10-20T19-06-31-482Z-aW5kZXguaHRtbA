@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>FeedForward: closing time in Bowling Green</title>
+    <script src="assets/js/gsap.min.js"></script>
+    <script src="assets/js/audio-data.js"></script>
+    <style>
+      @font-face {
+        font-family: "Bricolage Grotesque";
+        src: url("assets/fonts/bricolage-grotesque-latin-700-normal.woff2") format("woff2");
+        font-weight: 700;
+      }
+      @font-face {
+        font-family: "Source Sans 3";
+        src: url("assets/fonts/source-sans-3-latin-400-normal.woff2") format("woff2");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "Source Sans 3";
+        src: url("assets/fonts/source-sans-3-latin-600-normal.woff2") format("woff2");
+        font-weight: 600;
+      }
+      @font-face {
+        font-family: "Source Sans 3";
+        src: url("assets/fonts/source-sans-3-latin-700-normal.woff2") format("woff2");
+        font-weight: 700;
+      }
+
+      :root {
+        --ground: #f5f6f1;
+        --surface: #ffffff;
+        --ink: #18211b;
+        --muted: #4b554d;
+        --line: #d9ddd3;
+        --field: #b9bfb3;
+        --brand: #24603a;
+        --brand-dark: #1a4a2c;
+        --verified: #e2f0e6;
+        --t1-tint: #e3ebfa;
+        --t1-text: #173e85;
+        --t2-tint: #fbe8dc;
+        --t2-text: #8a3109;
+        --t3-tint: #f1e8f7;
+        --t3-text: #5b2a7a;
+        --display: "Bricolage Grotesque", sans-serif;
+        --sans: "Source Sans 3", system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--ground);
+      }
+
+      /* Persistent background: soft brand glows that breathe with the music */
+      #bg {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .glow {
+        position: absolute;
+        width: 1100px;
+        height: 1100px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(36, 96, 58, 0.14) 0%, rgba(36, 96, 58, 0) 65%);
+      }
+      #glow-a {
+        left: -380px;
+        top: -420px;
+      }
+      #glow-b {
+        right: -420px;
+        bottom: -480px;
+        background: radial-gradient(circle, rgba(180, 65, 12, 0.08) 0%, rgba(180, 65, 12, 0) 65%);
+      }
+      .dots {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(24, 33, 27, 0.07) 1.5px, transparent 1.5px);
+        background-size: 36px 36px;
+      }
+
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* ---------- Scene 1: hero ---------- */
+      .triptych {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .photo {
+        position: relative;
+        overflow: hidden;
+      }
+      .photo img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .photo .label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 56px;
+        display: flex;
+        justify-content: center;
+      }
+      .pill {
+        display: inline-block;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.96);
+        color: var(--brand);
+        font-weight: 700;
+        font-size: 30px;
+        padding: 10px 28px;
+      }
+      .hero-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        justify-content: center;
+      }
+      #hero-panel {
+        width: 1560px;
+        background: rgba(36, 96, 58, 0.93);
+        border-radius: 0 0 40px 40px;
+        padding: 56px 70px 64px;
+        text-align: center;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+      .kicker {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #ffffff;
+      }
+      .hero-line {
+        display: block;
+        font-family: var(--display);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 104px;
+        line-height: 1.02;
+      }
+
+      /* ---------- App scenes ---------- */
+      .stage {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 500px 1fr;
+        gap: 80px;
+        align-items: center;
+        padding: 80px 110px;
+      }
+      .step {
+        position: relative;
+        height: 420px;
+      }
+      .step-item {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+      .step-num {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .step-title {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 72px;
+        line-height: 1.05;
+        margin: 0;
+      }
+      .step-body {
+        font-size: 32px;
+        line-height: 1.4;
+        color: var(--muted);
+        margin: 0;
+        max-width: 470px;
+      }
+
+      .window {
+        width: 1150px;
+        border-radius: 28px;
+        background: var(--ground);
+        border: 1.5px solid var(--line);
+        overflow: hidden;
+        box-shadow: 0 30px 80px rgba(24, 33, 27, 0.16), 0 6px 18px rgba(24, 33, 27, 0.08);
+      }
+      .app-header {
+        background: var(--brand);
+        color: #ffffff;
+        height: 84px;
+        padding: 0 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .app-logo {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 36px;
+      }
+      .app-user {
+        font-size: 24px;
+        color: #ffffff;
+      }
+      .app-body {
+        padding: 34px 40px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        border-radius: 22px;
+        padding: 26px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .between {
+        justify-content: space-between;
+      }
+      .h2 {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 38px;
+        margin: 0;
+      }
+      .chip-ok {
+        border-radius: 999px;
+        background: var(--verified);
+        color: var(--brand);
+        font-weight: 700;
+        font-size: 22px;
+        padding: 6px 18px;
+      }
+      .field-label {
+        font-weight: 600;
+        font-size: 26px;
+      }
+      .textarea {
+        min-height: 180px;
+        border: 1.5px solid var(--field);
+        border-radius: 12px;
+        padding: 18px 22px;
+        font-size: 30px;
+        line-height: 1.4;
+        color: var(--ink);
+      }
+      .ch {
+        display: none;
+      }
+      .caret {
+        display: inline-block;
+        width: 3px;
+        height: 34px;
+        margin-left: 2px;
+        vertical-align: -6px;
+        background: var(--brand);
+      }
+      .btn-wrap {
+        position: relative;
+        align-self: flex-start;
+      }
+      .btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-height: 64px;
+        padding: 0 30px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 26px;
+        white-space: nowrap;
+      }
+      .btn-outline {
+        border: 2px solid var(--brand);
+        color: var(--brand);
+        background: var(--surface);
+      }
+      .btn-solid {
+        background: var(--brand);
+        color: #ffffff;
+      }
+      .btn-swap {
+        position: relative;
+        display: grid;
+      }
+      .btn-swap > span {
+        grid-area: 1 / 1;
+      }
+      .note {
+        font-size: 22px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .cursor {
+        position: absolute;
+        left: 58%;
+        top: 52%;
+        width: 46px;
+        height: 54px;
+        z-index: 5;
+      }
+      .cursor svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .tier {
+        display: inline-block;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 22px;
+        padding: 6px 18px;
+        white-space: nowrap;
+      }
+      .tier-1 {
+        background: var(--t1-tint);
+        color: var(--t1-text);
+      }
+      .tier-2 {
+        background: var(--t2-tint);
+        color: var(--t2-text);
+      }
+      .tier-3 {
+        background: var(--t3-tint);
+        color: var(--t3-text);
+      }
+
+      .draft {
+        padding: 20px 28px;
+        gap: 10px;
+      }
+      .draft-name {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 32px;
+      }
+      .item-no {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-right: 6px;
+      }
+      .meta {
+        font-size: 24px;
+        color: var(--ink);
+      }
+      .meta b {
+        font-weight: 600;
+      }
+      .meta .sep {
+        color: var(--muted);
+        margin: 0 10px;
+      }
+      .reason {
+        font-size: 22px;
+        color: var(--muted);
+      }
+      .confirm-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-weight: 600;
+        font-size: 24px;
+      }
+      .checkbox {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+        border: 2px solid var(--muted);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      .check-fill {
+        position: absolute;
+        inset: -2px;
+        border-radius: 8px;
+        background: var(--brand);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .status {
+        border: 1.5px solid var(--brand);
+        background: var(--verified);
+        color: var(--brand-dark);
+        border-radius: 16px;
+        padding: 16px 24px;
+        font-weight: 600;
+        font-size: 24px;
+      }
+
+      .cols {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 26px;
+        align-items: start;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .col-title {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 32px;
+        margin: 0;
+      }
+      .slot {
+        position: relative;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .dl {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr;
+        gap: 6px 24px;
+      }
+      .dt {
+        font-size: 20px;
+        color: var(--muted);
+      }
+      .dd {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .form-row {
+        border-top: 1.5px solid var(--line);
+        padding-top: 18px;
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+      }
+      .select-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .select {
+        position: relative;
+        width: 400px;
+        height: 58px;
+        border: 1.5px solid var(--field);
+        border-radius: 10px;
+        background: var(--surface);
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+      }
+      .select > span {
+        position: absolute;
+        left: 16px;
+        right: 40px;
+        white-space: nowrap;
+      }
+      .select::after {
+        content: "";
+        position: absolute;
+        right: 18px;
+        top: 22px;
+        width: 10px;
+        height: 10px;
+        border-right: 2.5px solid var(--muted);
+        border-bottom: 2.5px solid var(--muted);
+        transform: rotate(45deg);
+      }
+      .empty {
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        border-radius: 22px;
+        padding: 26px;
+        font-size: 24px;
+        line-height: 1.4;
+      }
+
+      /* ---------- Scene 5: outro ---------- */
+      .outro {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 34px;
+        text-align: center;
+      }
+      .badges {
+        display: flex;
+        gap: 18px;
+      }
+      .badges .tier {
+        font-size: 30px;
+        padding: 10px 26px;
+      }
+      #wordmark {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 190px;
+        line-height: 1;
+        color: var(--brand);
+      }
+      .outro-line {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 56px;
+        margin: 0;
+      }
+      .outro-sub {
+        font-size: 34px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .outro-url {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--brand);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-dce1" id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="23.4" data-fps="30">
+      <div data-hf-id="hf-2xc0" id="bg">
+        <div data-hf-id="hf-eg44" id="glow-a" class="glow"></div>
+        <div data-hf-id="hf-pblr" id="glow-b" class="glow"></div>
+        <div data-hf-id="hf-zx1w" class="dots"></div>
+      </div>
+
+      <!-- Scene 1 — Closing time -->
+      <section data-hf-id="hf-nz4i" id="s1" class="clip" data-start="0" data-duration="4.1" data-track-index="1">
+        <div data-hf-id="hf-rb5y" id="s1-in" class="scene">
+          <div data-hf-id="hf-0u6d" class="triptych">
+            <div data-hf-id="hf-1pjo" class="photo"><img data-hf-id="hf-1uw4" id="ph1" src="assets/img/hero-kitchen.png" alt="Cooks preparing vegetables in a commercial kitchen" /><div data-hf-id="hf-x0aa" class="label"><span data-hf-id="hf-jcgc" class="pill">Kitchens donate</span></div></div>
+            <div data-hf-id="hf-ofqk" class="photo"><img data-hf-id="hf-y320" id="ph2" src="assets/img/hero-pantry.jpg" alt="Volunteers handing out fresh produce at a food pantry" /><div data-hf-id="hf-wwom" class="label"><span data-hf-id="hf-i95t" class="pill">People first</span></div></div>
+            <div data-hf-id="hf-n8th" class="photo"><img data-hf-id="hf-b2em" id="ph3" src="assets/img/hero-farm.jpg" alt="Farmers working in rows of leafy greens" /><div data-hf-id="hf-xazn" class="label"><span data-hf-id="hf-ku2a" class="pill">Then farms</span></div></div>
+          </div>
+          <div data-hf-id="hf-bbul" class="hero-wrap">
+            <div data-hf-id="hf-2rhk" id="hero-panel">
+              <div data-hf-id="hf-n43j" id="kicker" class="kicker">Bowling Green, Kentucky</div>
+              <div data-hf-id="hf-yeow">
+                <span data-hf-id="hf-nu1i" id="hl1" class="hero-line">Tonight’s leftovers.</span>
+                <span data-hf-id="hf-2aqn" id="hl2" class="hero-line">Tomorrow’s meals.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 2 — Describe it -->
+      <section data-hf-id="hf-zc8j" id="s2" class="clip" data-start="3.75" data-duration="5.35" data-track-index="2">
+        <div data-hf-id="hf-0nmf" id="s2-in" class="scene">
+          <div data-hf-id="hf-tan6" class="stage">
+            <div data-hf-id="hf-uqbq" class="step">
+              <div data-hf-id="hf-fjkq" class="step-item">
+                <div data-hf-id="hf-ch3k" class="step-num">1</div>
+                <h2 data-hf-id="hf-cg8m" class="step-title">Describe it</h2>
+                <p data-hf-id="hf-k3ph" class="step-body">A kitchen manager types what’s left, the way they’d say it.</p>
+              </div>
+            </div>
+            <div data-hf-id="hf-igo8" id="s2-win" class="window">
+              <div data-hf-id="hf-cl9d" class="app-header">
+                <div data-hf-id="hf-g58w" class="app-logo">FeedForward</div>
+                <div data-hf-id="hf-8do2" class="app-user">Signed in as <b data-hf-id="hf-gi7g">Barren River Barbecue</b></div>
+              </div>
+              <div data-hf-id="hf-fgvm" class="app-body">
+                <div data-hf-id="hf-vn2y" class="card">
+                  <div data-hf-id="hf-thy4" class="row">
+                    <h3 data-hf-id="hf-tsvg" class="h2">Describe your surplus</h3>
+                    <span data-hf-id="hf-wcfa" class="chip-ok">AI drafts · you confirm</span>
+                  </div>
+                  <div data-hf-id="hf-ar2b" class="field-label">What’s left in your kitchen?</div>
+                  <div data-hf-id="hf-tli6" class="textarea"><span data-hf-id="hf-jk7q" id="typed"></span><span data-hf-id="hf-fir1" id="caret" class="caret"></span></div>
+                  <p data-hf-id="hf-f6q5" class="note">Describe it the way you’d tell a coworker.</p>
+                  <div data-hf-id="hf-qizh" class="btn-wrap">
+                    <div data-hf-id="hf-pd3b" id="draft-btn" class="btn btn-outline">
+                      <span data-hf-id="hf-2i3l" class="btn-swap"><span data-hf-id="hf-zgfs" id="draft-label">Draft listings with AI</span><span data-hf-id="hf-5pmt" id="drafting-label">Drafting…</span></span>
+                    </div>
+                    <div data-hf-id="hf-l4cg" id="cursor-1" class="cursor">
+                      <svg data-hf-id="hf-zcq8" viewBox="0 0 46 54"><path data-hf-id="hf-3bcz" d="M3 3 L3 44 L13.5 34 L21 51 L28.5 47.5 L21 31 L36 31 Z" fill="#ffffff" stroke="#18211B" stroke-width="3" stroke-linejoin="round" /></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 3 — AI drafts it / Confirm it -->
+      <section data-hf-id="hf-m2kz" id="s3" class="clip" data-start="8.75" data-duration="6.75" data-track-index="3">
+        <div data-hf-id="hf-6wek" id="s3-in" class="scene">
+          <div data-hf-id="hf-xa86" class="stage">
+            <div data-hf-id="hf-jlje" class="step">
+              <div data-hf-id="hf-7z28" id="step2" class="step-item">
+                <div data-hf-id="hf-ba6h" class="step-num">2</div>
+                <h2 data-hf-id="hf-ej6v" class="step-title">AI drafts it</h2>
+                <p data-hf-id="hf-funy" class="step-body">Google’s Gemini AI turns it into listings. Our rules suggest where each item goes.</p>
+              </div>
+              <div data-hf-id="hf-8qq1" id="step3" class="step-item">
+                <div data-hf-id="hf-bohi" class="step-num">3</div>
+                <h2 data-hf-id="hf-wopp" class="step-title">Confirm it</h2>
+                <p data-hf-id="hf-nd9q" class="step-body">The donor checks every item. Cooked food gets a quick safety question.</p>
+              </div>
+            </div>
+            <div data-hf-id="hf-ajlt" id="s3-win" class="window">
+              <div data-hf-id="hf-nd85" class="app-header">
+                <div data-hf-id="hf-8w2w" class="app-logo">FeedForward</div>
+                <div data-hf-id="hf-7x12" class="app-user">Signed in as <b data-hf-id="hf-ynyc">Barren River Barbecue</b></div>
+              </div>
+              <div data-hf-id="hf-d33q" class="app-body">
+                <div data-hf-id="hf-e5f4" id="d1" class="card draft">
+                  <div data-hf-id="hf-mwcs" class="row between">
+                    <div data-hf-id="hf-mhd2" class="draft-name"><span data-hf-id="hf-w2bc" class="item-no">Item 1</span> Romaine lettuce</div>
+                    <span data-hf-id="hf-fwpq" class="tier tier-1">Tier 1 · People</span>
+                  </div>
+                  <div data-hf-id="hf-hirj" class="meta"><b data-hf-id="hf-ayi9">30 lbs</b><span data-hf-id="hf-9z7o" class="sep">·</span>Outer leaves wilted</div>
+                  <div data-hf-id="hf-ixxx" class="reason">Edible food goes to people first</div>
+                </div>
+                <div data-hf-id="hf-mtaz" id="d2" class="card draft">
+                  <div data-hf-id="hf-j42s" class="row between">
+                    <div data-hf-id="hf-m0ri" class="draft-name"><span data-hf-id="hf-uve9" class="item-no">Item 2</span> Rice</div>
+                    <span data-hf-id="hf-qts2" class="tier tier-1">Tier 1 · People</span>
+                  </div>
+                  <div data-hf-id="hf-kjum" class="meta"><b data-hf-id="hf-a2ps">2 trays</b><span data-hf-id="hf-jxks" class="sep">·</span>Cooked, from lunch</div>
+                  <div data-hf-id="hf-jtfq" class="reason">Cooked food can go to people: confirm how long it has been out</div>
+                </div>
+                <div data-hf-id="hf-iv6y" id="d3" class="card draft">
+                  <div data-hf-id="hf-hx5p" class="row between">
+                    <div data-hf-id="hf-6oyn" class="draft-name"><span data-hf-id="hf-v9pa" class="item-no">Item 3</span> Potato peels</div>
+                    <span data-hf-id="hf-089c" class="tier tier-2">Tier 2 · Animals</span>
+                  </div>
+                  <div data-hf-id="hf-jnvn" class="meta"><b data-hf-id="hf-yg6y">1 bucket</b><span data-hf-id="hf-iqnp" class="sep">·</span>Raw peels, plant-based</div>
+                  <div data-hf-id="hf-bprg" class="reason">Not for people, but plant-based scraps can feed animals (never pigs)</div>
+                </div>
+                <div data-hf-id="hf-yyyc" id="confirm-block" class="col">
+                  <div data-hf-id="hf-1487" class="confirm-row">
+                    <div data-hf-id="hf-n30j" class="checkbox">
+                      <div data-hf-id="hf-raoy" id="check-fill" class="check-fill">
+                        <svg data-hf-id="hf-r8ru" width="24" height="24" viewBox="0 0 24 24"><path data-hf-id="hf-n5j5" d="M4 12.5 L9.5 18 L20 6.5" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                      </div>
+                    </div>
+                    <span data-hf-id="hf-xpy4">I reviewed every item, its condition, destination, and pickup availability.</span>
+                  </div>
+                  <div data-hf-id="hf-fv78" class="slot">
+                    <div data-hf-id="hf-szj9" id="confirm-row-btn" class="btn-wrap">
+                      <div data-hf-id="hf-24di" id="confirm-btn" class="btn btn-solid">Confirm and post food</div>
+                      <div data-hf-id="hf-ts8b" id="cursor-2" class="cursor">
+                        <svg data-hf-id="hf-ahhk" viewBox="0 0 46 54"><path data-hf-id="hf-9j2b" d="M3 3 L3 44 L13.5 34 L21 51 L28.5 47.5 L21 31 L36 31 Z" fill="#ffffff" stroke="#18211B" stroke-width="3" stroke-linejoin="round" /></svg>
+                      </div>
+                    </div>
+                    <div data-hf-id="hf-w265" id="posted" class="status" style="position: absolute; left: 0; right: 0; top: 0">Posted 3 items. Eligible recipients can now find your food.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 4 — Route it (recipient claims) -->
+      <section data-hf-id="hf-m0w3" id="s4" class="clip" data-start="15.15" data-duration="4.6" data-track-index="4">
+        <div data-hf-id="hf-bot1" id="s4-in" class="scene">
+          <div data-hf-id="hf-xoj7" class="stage">
+            <div data-hf-id="hf-jzuf" class="step">
+              <div data-hf-id="hf-glj2" class="step-item">
+                <div data-hf-id="hf-ahkf" class="step-num">4</div>
+                <h2 data-hf-id="hf-opre" class="step-title">Route it</h2>
+                <p data-hf-id="hf-ya20" class="step-body">Verified recipients whose own rules fit are suggested, and one claims it.</p>
+              </div>
+            </div>
+            <div data-hf-id="hf-gahy" id="s4-win" class="window">
+              <div data-hf-id="hf-ok58" class="app-header">
+                <div data-hf-id="hf-7p5t" class="app-logo">FeedForward</div>
+                <div data-hf-id="hf-8bc3" class="app-user">Signed in as <b data-hf-id="hf-evi7">Fountain Square Community Pantry</b></div>
+              </div>
+              <div data-hf-id="hf-dher" class="app-body">
+                <div data-hf-id="hf-v6fj" class="slot" style="height: 62px">
+                  <p data-hf-id="hf-b01b" id="tz-note" class="note" style="position: absolute; top: 16px">Pickup times are shown in Central time.</p>
+                  <div data-hf-id="hf-t77r" id="reserved" class="status" style="position: absolute; left: 0; right: 0; top: 0; padding: 14px 22px">Reserved Romaine lettuce for Tue, Oct 20, 2026, 8:30 PM CDT.</div>
+                </div>
+                <div data-hf-id="hf-6ra9" class="cols">
+                  <div data-hf-id="hf-7s1i" class="col">
+                    <h3 data-hf-id="hf-bssy" class="col-title">Available food</h3>
+                    <div data-hf-id="hf-exn0" class="slot">
+                      <div data-hf-id="hf-6un0" id="avail-card" class="card">
+                        <div data-hf-id="hf-hyc8" class="row between" style="align-items: flex-start">
+                          <div data-hf-id="hf-y7yw">
+                            <div data-hf-id="hf-3i7e" class="draft-name">Romaine lettuce</div>
+                            <div data-hf-id="hf-2azj" class="meta muted">Barren River Barbecue · 2.1 mi</div>
+                          </div>
+                          <span data-hf-id="hf-r833" class="tier tier-1">Tier 1 · People</span>
+                        </div>
+                        <div data-hf-id="hf-n2m8" class="dl">
+                          <div data-hf-id="hf-sqrx" class="dt">Quantity</div>
+                          <div data-hf-id="hf-fywd" class="dt">Condition</div>
+                          <div data-hf-id="hf-zc0s" class="dd">30 lbs</div>
+                          <div data-hf-id="hf-j3ga" class="dd">Outer leaves wilted</div>
+                        </div>
+                        <div data-hf-id="hf-orr9" class="form-row">
+                          <div data-hf-id="hf-qy51" class="select-wrap">
+                            <div data-hf-id="hf-q8mu" class="dt" style="font-weight: 700; color: var(--ink)">Pickup time</div>
+                            <div data-hf-id="hf-l7nq" id="select" class="select">
+                              <span data-hf-id="hf-mrdr" id="sel-empty" class="muted">Choose a time</span>
+                              <span data-hf-id="hf-o9tz" id="sel-time">Tue, Oct 20, 8:30 PM CDT</span>
+                            </div>
+                          </div>
+                          <div data-hf-id="hf-wbld" class="btn-wrap">
+                            <div data-hf-id="hf-guw9" id="claim-btn" class="btn btn-solid">Claim</div>
+                            <div data-hf-id="hf-pu4a" id="cursor-3" class="cursor">
+                              <svg data-hf-id="hf-9akh" viewBox="0 0 46 54"><path data-hf-id="hf-94ra" d="M3 3 L3 44 L13.5 34 L21 51 L28.5 47.5 L21 31 L36 31 Z" fill="#ffffff" stroke="#18211B" stroke-width="3" stroke-linejoin="round" /></svg>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div data-hf-id="hf-vmze" class="col">
+                    <h3 data-hf-id="hf-22m1" class="col-title">Your pickups</h3>
+                    <div data-hf-id="hf-dqpx" class="slot">
+                      <div data-hf-id="hf-e25p" id="pickups-empty" class="empty muted">Food you reserve will appear here, including when you return later.</div>
+                      <div data-hf-id="hf-d9ym" id="pickup-card" class="card" style="position: absolute; left: 0; right: 0; top: 0">
+                        <div data-hf-id="hf-mhda" class="draft-name" style="font-size: 30px">Romaine lettuce</div>
+                        <div data-hf-id="hf-nkjf" class="meta muted">Barren River Barbecue · Tue, Oct 20, 8:30 PM CDT</div>
+                        <div data-hf-id="hf-x11t"><span data-hf-id="hf-rme4" class="tier tier-1">Tier 1 · People</span></div>
+                        <div data-hf-id="hf-8tnb" class="meta">30 lbs</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 5 — Outro -->
+      <section data-hf-id="hf-9v2h" id="s5" class="clip" data-start="19.4" data-duration="4" data-track-index="5">
+        <div data-hf-id="hf-2fjp" id="s5-in" class="outro">
+          <div data-hf-id="hf-6yxz" id="wordmark">FeedForward</div>
+          <p data-hf-id="hf-1lz2" id="o-line" class="outro-line">People first, then farms, then compost.</p>
+          <div data-hf-id="hf-mmke" id="o-badges" class="badges">
+            <span data-hf-id="hf-s0p5" class="tier tier-1">Tier 1 · People</span>
+            <span data-hf-id="hf-lc4o" class="tier tier-2">Tier 2 · Animals</span>
+            <span data-hf-id="hf-jqzw" class="tier tier-3">Tier 3 · Compost</span>
+          </div>
+          <p data-hf-id="hf-j9up" id="o-sub" class="outro-sub">Now testing in Bowling Green, Kentucky</p>
+          <div data-hf-id="hf-pk20" id="o-url" class="outro-url">feedforward.brentoncodes.dev</div>
+        </div>
+      </section>
+
+      <!-- Audio: voiceover, music bed, SFX -->
+      <audio data-hf-id="hf-qnmz" id="vo" src="assets/voiceover.wav" data-start="0" data-duration="23.4" data-track-index="30" data-volume="1" data-fx-chain="{&quot;version&quot;:1,&quot;nodes&quot;:[{&quot;type&quot;:&quot;highpass&quot;,&quot;id&quot;:&quot;n1&quot;,&quot;fromPreset&quot;:&quot;voice-warm&quot;,&quot;label&quot;:&quot;Remove Rumble&quot;,&quot;params&quot;:{&quot;frequency&quot;:70,&quot;q&quot;:0.707,&quot;poles&quot;:&quot;2&quot;}},{&quot;type&quot;:&quot;lowshelf&quot;,&quot;id&quot;:&quot;n2&quot;,&quot;fromPreset&quot;:&quot;voice-warm&quot;,&quot;label&quot;:&quot;Add Weight&quot;,&quot;params&quot;:{&quot;frequency&quot;:180,&quot;gain&quot;:2}},{&quot;type&quot;:&quot;compressor&quot;,&quot;id&quot;:&quot;n3&quot;,&quot;fromPreset&quot;:&quot;voice-warm&quot;,&quot;label&quot;:&quot;Even Out Loudness&quot;,&quot;params&quot;:{&quot;threshold&quot;:-18,&quot;ratio&quot;:2.5,&quot;attack&quot;:20,&quot;release&quot;:250,&quot;knee&quot;:2.83,&quot;makeup&quot;:2,&quot;mix&quot;:1}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n4&quot;,&quot;fromPreset&quot;:&quot;voice-warm&quot;,&quot;label&quot;:&quot;Add Clarity&quot;,&quot;params&quot;:{&quot;frequency&quot;:3000,&quot;gain&quot;:1.5,&quot;q&quot;:0.8}},{&quot;type&quot;:&quot;limiter&quot;,&quot;id&quot;:&quot;n5&quot;,&quot;fromPreset&quot;:&quot;voice-warm&quot;,&quot;label&quot;:&quot;Peak Ceiling&quot;,&quot;params&quot;:{&quot;limit&quot;:-1.5,&quot;attack&quot;:5,&quot;release&quot;:50,&quot;level_out&quot;:0}}]}"></audio>
+      <audio data-hf-id="hf-cw05"
+        id="music"
+        src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3"
+        data-start="0"
+        data-duration="23.4"
+        data-track-index="31"
+        data-volume="1"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.5,"v":0.15},{"t":3.85,"v":0.15},{"t":4.0,"v":0.22},{"t":4.15,"v":0.14},{"t":6.9,"v":0.14},{"t":7.2,"v":0.26},{"t":8.7,"v":0.26},{"t":8.95,"v":0.14},{"t":15.15,"v":0.14},{"t":15.35,"v":0.22},{"t":15.55,"v":0.14},{"t":18.25,"v":0.14},{"t":18.5,"v":0.28},{"t":19.6,"v":0.28},{"t":19.85,"v":0.14},{"t":22.2,"v":0.14},{"t":23.35,"v":0}]}]}'
+      ></audio>
+
+      <audio data-hf-id="hf-28jn" id="sfx-hook" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="1.55" data-duration="0.18" data-track-index="40" data-volume="0.5"></audio>
+      <audio data-hf-id="hf-qo07" id="key-1" src="assets/sfx/keyboard/keypress-001.wav" data-start="4.36" data-duration="0.25" data-track-index="41" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-wz61" id="key-2" src="assets/sfx/keyboard/keypress-004.wav" data-start="4.68" data-duration="0.25" data-track-index="42" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-btb9" id="key-3" src="assets/sfx/keyboard/keypress-007.wav" data-start="5.02" data-duration="0.25" data-track-index="41" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-jff4" id="key-4" src="assets/sfx/keyboard/keypress-009.wav" data-start="5.36" data-duration="0.25" data-track-index="42" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-z56u" id="key-5" src="assets/sfx/keyboard/keypress-004.wav" data-start="5.71" data-duration="0.25" data-track-index="41" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-b1z3" id="key-6" src="assets/sfx/keyboard/keypress-001.wav" data-start="6.05" data-duration="0.25" data-track-index="42" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-7jvy" id="key-7" src="assets/sfx/keyboard/keypress-009.wav" data-start="6.40" data-duration="0.25" data-track-index="41" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-1m07" id="key-8" src="assets/sfx/keyboard/keypress-007.wav" data-start="6.74" data-duration="0.25" data-track-index="42" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-7m2j" id="key-9" src="assets/sfx/keyboard/keypress-001.wav" data-start="7.06" data-duration="0.25" data-track-index="41" data-volume="0.28"></audio>
+      <audio data-hf-id="hf-1630" id="sfx-draft" src="assets/sfx/ui/mouseclick1.ogg" data-start="7.72" data-duration="0.059" data-track-index="43" data-volume="0.7"></audio>
+      <audio data-hf-id="hf-gl88" id="sfx-d1" src="assets/sfx/interface/drop_001.ogg" data-start="8.94" data-duration="0.1" data-track-index="44" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-kdaz" id="sfx-d2" src="assets/sfx/interface/drop_002.ogg" data-start="9.99" data-duration="0.19" data-track-index="44" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-6in3" id="sfx-d3" src="assets/sfx/interface/drop_001.ogg" data-start="11.04" data-duration="0.1" data-track-index="44" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-5tev" id="sfx-check" src="assets/sfx/ui/click2.ogg" data-start="12.55" data-duration="0.055" data-track-index="45" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-gxim" id="sfx-confirm" src="assets/sfx/ui/mouseclick1.ogg" data-start="13.55" data-duration="0.059" data-track-index="46" data-volume="0.7"></audio>
+      <audio data-hf-id="hf-b9db" id="sfx-select" src="assets/sfx/ui/click2.ogg" data-start="16.15" data-duration="0.055" data-track-index="45" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-h9e0" id="sfx-claim" src="assets/sfx/ui/mouseclick1.ogg" data-start="16.98" data-duration="0.059" data-track-index="46" data-volume="0.7"></audio>
+      <audio data-hf-id="hf-xzgl" id="sfx-bell" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="17.3" data-duration="1.48" data-track-index="47" data-volume="0.4"></audio>
+      <audio data-hf-id="hf-h3ri" id="sfx-word" src="assets/sfx/impact/impactSoft_medium_004.ogg" data-start="19.5" data-duration="0.14" data-track-index="48" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      (function () {
+        var FULL = "About 30 lbs of romaine, outer leaves wilted, two full trays of rice from lunch, and a bucket of potato peels.";
+
+        // Build the typed sentence as per-character spans (hidden until typed).
+        var typed = document.getElementById("typed");
+        var chars = [];
+        for (var i = 0; i < FULL.length; i++) {
+          var s = document.createElement("span");
+          s.className = "ch";
+          s.textContent = FULL[i];
+          typed.appendChild(s);
+          chars.push(s);
+        }
+
+        function build() {
+          var tl = gsap.timeline({ paused: true });
+
+          // ---- Scene 1: closing time (0 – 4.1) ----
+          tl.fromTo("#ph1", { scale: 1.08 }, { scale: 1.0, duration: 4.1, ease: "none" }, 0);
+          tl.fromTo("#ph2", { scale: 1.0 }, { scale: 1.07, duration: 4.1, ease: "none" }, 0);
+          tl.fromTo("#ph3", { scale: 1.08, xPercent: 2 }, { scale: 1.02, xPercent: 0, duration: 4.1, ease: "none" }, 0);
+          tl.fromTo("#hero-panel", { yPercent: -105 }, { yPercent: 0, duration: 0.7, ease: "power3.out" }, 0.05);
+          tl.fromTo("#kicker", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 0.45);
+          tl.fromTo("#hl1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.55);
+          // beat-locked: 1.60s (strong cue) — second hero line lands
+          tl.fromTo("#hl2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.58);
+          tl.to("#s1-in", { opacity: 0, duration: 0.35, ease: "power1.in" }, 3.72);
+
+          // ---- Scene 2: describe it (3.75 – 9.1) ----
+          tl.fromTo("#s2-in", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.out" }, 3.75);
+          tl.fromTo("#s2-win", { y: 60 }, { y: 0, duration: 0.6, ease: "power3.out" }, 3.75);
+          var t0 = 4.35, step = 2.8 / FULL.length;
+          chars.forEach(function (c, idx) {
+            tl.set(c, { display: "inline" }, t0 + idx * step);
+          });
+          // caret blinks only while idle (before typing and after it finishes)
+          tl.fromTo("#caret", { opacity: 1 }, { opacity: 0, duration: 0.01, repeat: 1, yoyo: true, repeatDelay: 0.3 }, 3.9);
+          [7.4, 8.0, 8.6].forEach(function (t) {
+            tl.to("#caret", { opacity: 0, duration: 0.01 }, t);
+            tl.to("#caret", { opacity: 1, duration: 0.01 }, t + 0.3);
+          });
+          tl.set("#drafting-label", { opacity: 0 }, 3.75);
+          tl.fromTo("#cursor-1", { opacity: 0, x: -260, y: 150 }, { opacity: 1, x: -150, y: 90, duration: 0.25, ease: "none" }, 7.05);
+          tl.to("#cursor-1", { x: 0, y: 0, duration: 0.4, ease: "power2.inOut" }, 7.3);
+          tl.to("#draft-btn", { scale: 0.95, duration: 0.08, ease: "power1.out" }, 7.72);
+          tl.to("#draft-btn", { scale: 1, duration: 0.2, ease: "back.out(3)" }, 7.8);
+          tl.to("#draft-label", { opacity: 0, duration: 0.12 }, 7.78);
+          tl.to("#drafting-label", { opacity: 1, duration: 0.12 }, 7.82);
+          tl.to("#draft-btn", { backgroundColor: "#E2F0E6", duration: 0.25 }, 7.8);
+          tl.to("#cursor-1", { x: 120, y: 70, opacity: 0, duration: 0.5, ease: "power1.in" }, 8.1);
+          tl.to("#s2-in", { opacity: 0, duration: 0.35, ease: "power1.in" }, 8.72);
+
+          // ---- Scene 3: drafts + confirm (8.75 – 15.5) ----
+          tl.fromTo("#s3-in", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.out" }, 8.75);
+          tl.set(["#d1", "#d2", "#d3", "#confirm-block"], { opacity: 0 }, 8.75);
+          // beat-grid: every other beat from the 8.96s strong cue — 8.96, 10.01, 11.06
+          [["#d1", 8.96], ["#d2", 10.01], ["#d3", 11.06]].forEach(function (p) {
+            tl.fromTo(p[0], { opacity: 0, y: 36, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, p[1]);
+          });
+          tl.set("#step3", { opacity: 0 }, 8.75);
+          tl.to("#step2", { opacity: 0, y: -20, duration: 0.35, ease: "power1.in" }, 12.15);
+          tl.fromTo("#step3", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 12.4);
+          tl.fromTo("#confirm-block", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 12.1);
+          tl.fromTo("#check-fill", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2.5)" }, 12.55);
+          tl.set("#posted", { opacity: 0 }, 8.75);
+          tl.fromTo("#cursor-2", { opacity: 0, x: -340, y: -40 }, { opacity: 1, x: -240, y: -24, duration: 0.2, ease: "none" }, 12.9);
+          tl.to("#cursor-2", { x: 0, y: 0, duration: 0.42, ease: "power2.inOut" }, 13.1);
+          tl.to("#confirm-btn", { scale: 0.95, duration: 0.08 }, 13.55);
+          tl.to("#confirm-btn", { scale: 1, duration: 0.2, ease: "back.out(3)" }, 13.63);
+          tl.to("#confirm-row-btn", { opacity: 0, duration: 0.2 }, 13.85);
+          tl.fromTo("#posted", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 13.9);
+          tl.to("#s3-in", { opacity: 0, duration: 0.35, ease: "power1.in" }, 15.12);
+
+          // ---- Scene 4: pantry claims (15.15 – 19.75) ----
+          tl.fromTo("#s4-in", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.out" }, 15.15);
+          tl.fromTo("#s4-win", { y: 50 }, { y: 0, duration: 0.55, ease: "power3.out" }, 15.15);
+          tl.set(["#reserved", "#pickup-card", "#sel-time"], { opacity: 0 }, 15.15);
+          tl.fromTo("#cursor-3", { opacity: 0, x: -360, y: 60 }, { opacity: 1, x: -300, y: 10, duration: 0.45, ease: "power2.out" }, 15.6);
+          tl.to("#select", { borderColor: "#24603A", duration: 0.15 }, 16.15);
+          tl.to("#sel-empty", { opacity: 0, duration: 0.15 }, 16.2);
+          tl.to("#sel-time", { opacity: 1, duration: 0.15 }, 16.25);
+          tl.to("#cursor-3", { x: 0, y: 0, duration: 0.55, ease: "power2.inOut" }, 16.4);
+          tl.to("#claim-btn", { scale: 0.93, duration: 0.08 }, 16.98);
+          tl.to("#claim-btn", { scale: 1, duration: 0.2, ease: "back.out(3)" }, 17.06);
+          tl.to("#tz-note", { opacity: 0, duration: 0.2 }, 17.1);
+          tl.fromTo("#reserved", { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 17.15);
+          tl.to("#avail-card", { opacity: 0, x: 50, duration: 0.4, ease: "power2.in" }, 17.2);
+          tl.to("#pickups-empty", { opacity: 0, duration: 0.25 }, 17.3);
+          tl.fromTo("#pickup-card", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 17.35);
+          tl.to("#s4-in", { opacity: 0, duration: 0.35, ease: "power1.in" }, 19.38);
+
+          // ---- Scene 5: outro (19.4 – 23.4) ----
+          // beat-grid: wordmark at the 19.49s beat
+          tl.fromTo("#wordmark", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 19.5);
+          tl.fromTo("#o-line", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 20.0);
+          tl.fromTo("#o-badges .tier", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(2)", stagger: 0.18 }, 20.5);
+          tl.fromTo("#o-sub", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out" }, 21.2);
+          tl.fromTo("#o-url", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out" }, 21.5);
+
+          // ---- Ambient background drift ----
+          tl.fromTo("#glow-a", { x: 0, y: 0 }, { x: 120, y: 60, duration: 23.4, ease: "sine.inOut" }, 0);
+          tl.fromTo("#glow-b", { x: 0, y: 0 }, { x: -100, y: -50, duration: 23.4, ease: "sine.inOut" }, 0);
+
+          // ---- Audio-reactive: music RMS/bass warms the glows, hero panel, and wordmark ----
+          var AD = window.AUDIO_DATA;
+          var glowA = document.getElementById("glow-a");
+          var glowB = document.getElementById("glow-b");
+          var panel = document.getElementById("hero-panel");
+          var word = document.getElementById("wordmark");
+          var frames = Math.min(AD.rms.length, Math.floor(23.4 * AD.fps));
+          for (var f = 0; f < frames; f++) {
+            tl.call(
+              (function (rms, bass) {
+                return function () {
+                  glowA.style.opacity = (0.7 + 0.3 * rms).toFixed(3);
+                  glowB.style.opacity = (0.6 + 0.4 * bass).toFixed(3);
+                  panel.style.boxShadow = "0 18px " + (40 + 50 * rms).toFixed(1) + "px rgba(26, 74, 44, " + (0.25 + 0.25 * bass).toFixed(3) + ")";
+                  word.style.textShadow = "0 8px " + (18 + 22 * rms).toFixed(1) + "px rgba(36, 96, 58, " + (0.12 + 0.14 * bass).toFixed(3) + ")";
+                };
+              })(AD.rms[f], AD.bass[f]),
+              [],
+              f / AD.fps
+            );
+          }
+
+          window.__timelines["main"] = tl;
+        }
+
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(build);
+        } else {
+          build();
+        }
+      })();
+    </script>
+  </body>
+</html>
